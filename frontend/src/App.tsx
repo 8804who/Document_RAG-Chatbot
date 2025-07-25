@@ -1,26 +1,33 @@
 import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import ChatPage from './pages/ChatPage';
+import DocumentUploadPage from './pages/DocumentUploadPage';
+import { useAuth } from './hooks/useAuth';
 import './App.css';
 
-function App() {
+const NavBar: React.FC = () => {
+  const { isAuthenticated, logout } = useAuth();
+  const location = useLocation();
+  if (!isAuthenticated) return null;
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <nav className="navbar">
+      <Link to="/chat" className={location.pathname === '/chat' ? 'active' : ''}>Chat</Link>
+      <Link to="/upload" className={location.pathname === '/upload' ? 'active' : ''}>Upload</Link>
+      <button onClick={logout} className="logout-btn">Logout</button>
+    </nav>
   );
-}
+};
+
+const App: React.FC = () => (
+  <Router>
+    <NavBar />
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/chat" element={<ChatPage />} />
+      <Route path="/upload" element={<DocumentUploadPage />} />
+    </Routes>
+  </Router>
+);
 
 export default App;

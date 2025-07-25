@@ -1,0 +1,23 @@
+.chat-bubble {
+  max-width: 70%;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: inline-block;
+}
+.chat-bubble.user {
+  background: linear-gradient(90deg, #f9d423 0%, #ff4e50 100%);
+  color: #fff;
+  align-self: flex-end;
+  margin-left: auto;
+}
+.chat-bubble.bot {
+  background: #fff;
+  color: #222;
+  align-self: flex-start;
+  margin-right: auto;
+  border: 1px solid #eee;
+} 
