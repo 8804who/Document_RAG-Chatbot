@@ -19,15 +19,25 @@ const NavBar: React.FC = () => {
   );
 };
 
-const App: React.FC = () => (
-  <Router>
-    <NavBar />
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/chat" element={<ChatPage />} />
-      <Route path="/upload" element={<DocumentUploadPage />} />
-    </Routes>
-  </Router>
-);
+const App: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Router>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route
+          path="/chat"
+          element={isAuthenticated ? <ChatPage /> : <LoginPage />}
+        />
+        <Route
+          path="/upload"
+          element={isAuthenticated ? <DocumentUploadPage /> : <LoginPage />}
+        />
+      </Routes>
+    </Router>
+  );
+};
 
 export default App;

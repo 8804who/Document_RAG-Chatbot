@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from api.v1.router import api_router
 import uvicorn
 
 app = FastAPI()
@@ -11,6 +13,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="12312dadl3l1k3k",  # 반드시 랜덤하고 안전한 값으로 설정 (배포 시 중요!)
+)
+
+app.include_router(api_router, prefix="/api")
 
 
 @app.get("/health")

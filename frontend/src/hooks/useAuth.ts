@@ -1,13 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export function useAuth() {
-  const token = localStorage.getItem('access_token');
-  const isAuthenticated = !!token;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const logout = useCallback(() => {
     localStorage.removeItem('access_token');
     window.location.href = '/';
   }, []);
 
-  return { token, isAuthenticated, logout };
+  return { isAuthenticated, setIsAuthenticated, logout };
 } 
