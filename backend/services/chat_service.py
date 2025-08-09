@@ -5,12 +5,13 @@ from pydantic import SecretStr
 import logging
 
 OPENAI_API_KEY = config.OPENAI_API_KEY
+OPENAI_MODEL = config.OPENAI_MODEL
 
 
 def get_chat_model():
     if OPENAI_API_KEY is None:
         raise ValueError("OPENAI_API_KEY is not set.")
-    return ChatOpenAI(api_key=SecretStr(OPENAI_API_KEY), model="gpt-4o-mini")
+    return ChatOpenAI(api_key=SecretStr(OPENAI_API_KEY), model=OPENAI_MODEL)
 
 
 def get_answer(user_query: str):

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { chat } from '../services';
-import { useNavigate } from 'react-router-dom';
+import { getAccessToken } from '../services/token_service';
 import '../styles/ChatPage.css';
+import { get } from 'http';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -14,8 +15,6 @@ const ChatPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -27,9 +26,9 @@ const ChatPage: React.FC = () => {
     setMessages(msgs => [...msgs, userMsg]);
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token') || '';
+      const token = getAccessToken() || '';
       const data = await chat(input, token);
-      setMessages(msgs => [...msgs, { sender: 'bot', text: data.response } as Message]);
+      setMessages(msgs => [...msgs, { sender: 'bot', text: data.message } as Message]);
     } catch {
       setMessages(msgs => [...msgs, { sender: 'bot', text: 'Error: Could not get response.' } as Message]);
     } finally {
@@ -37,11 +36,6 @@ const ChatPage: React.FC = () => {
       setInput('');
     }
   };
-
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) navigate('/');
-  }, []);
 
   return (
     <div className="chat-container">

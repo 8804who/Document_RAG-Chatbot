@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { uploadDocument } from '../services';
-import { useNavigate } from 'react-router-dom';
+import { getAccessToken } from '../services/token_service';
 import '../styles/DocumentUploadPage.css';
 
 const DocumentUploadPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFile(e.target.files?.[0] || null);
@@ -20,7 +18,7 @@ const DocumentUploadPage: React.FC = () => {
     setLoading(true);
     setStatus('');
     try {
-      const token = localStorage.getItem('access_token') || '';
+      const token = getAccessToken() || '';
       const data = await uploadDocument(file, token);
       setStatus('Upload successful!');
     } catch {
@@ -30,11 +28,6 @@ const DocumentUploadPage: React.FC = () => {
       setFile(null);
     }
   };
-
-  React.useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) navigate('/');
-  }, []);
 
   return (
     <div className="upload-container">

@@ -35,6 +35,9 @@ async def verify_google_token(token: str) -> dict:
 
     Args:
         token (str): 인증받을 토큰
+
+    Returns:
+        dict: 토큰 정보
     """
     try:
         response = requests.get(
@@ -67,13 +70,18 @@ async def verify_google_token(token: str) -> dict:
 async def verify_google_id_token(id_token_str: str) -> dict:
     """
     Google ID Token 인증
+
+    Args:
+        id_token_str (str):
+
+    Returns:
+        dict: 토큰 정보
+
     """
     try:
-        # Verify the ID token
         idinfo = id_token.verify_oauth2_token(
             id_token_str, google_requests.Request(), GOOGLE_CLIENT_ID
         )
-
         return {
             "valid": True,
             "user_info": {
@@ -103,6 +111,13 @@ async def auth(request: Request):
     userinfo_json = token.get("userinfo", {})
     userinfo_str = json.dumps(userinfo_json)
 
+    if token["refresh_token"]:
+        refresh_token = token["refresh_token"]
+    else:
+        refresh_token = None
+
+    print(f"refresh_token: {refresh_token}")
+
     html_content = f"""
     <html>
       <body>
@@ -128,19 +143,23 @@ async def auth(request: Request):
 @auth_router.post("/verify")
 async def verify_token_endpoint(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-):
+) -> dict:
     """
-    Verify Google access token
+    구글 Token 검증 엔드포인트
+
+    Args:
+        credentials (HTTPAuthorizationCredentials): 토큰
+
+    Returns:
+        dict: 토큰 정보
     """
     token = credentials.credentials
 
     try:
-        # Try to verify as access token first
         verification_result = await verify_google_token(token)
         return verification_result
     except HTTPException:
         try:
-            # If that fails, try as ID token
             verification_result = await verify_google_id_token(token)
             return verification_result
         except HTTPException:
@@ -148,9 +167,15 @@ async def verify_token_endpoint(
 
 
 @auth_router.post("/refresh")
-async def refresh_token(request: Request):
+async def refresh_token(request: Request) -> dict:
     """
-    Refresh Google access token using refresh token
+    구글 Access Token 갱신
+
+    Args:
+        request (Request): 토큰 갱신 요청
+
+    Returns:
+        dict: 새롭게 발급 받은 토큰
     """
     try:
         body = await request.json()
@@ -159,7 +184,6 @@ async def refresh_token(request: Request):
         if not refresh_token:
             raise HTTPException(status_code=400, detail="Refresh token is required")
 
-        # Use Google's token endpoint to refresh
         response = requests.post(
             "https://oauth2.googleapis.com/token",
             data={
@@ -197,7 +221,6 @@ async def logout(request: Request):
         if not access_token:
             raise HTTPException(status_code=400, detail="Access token is required")
 
-        # Revoke the token with Google
         response = requests.post(
             "https://oauth2.googleapis.com/revoke", data={"token": access_token}
         )

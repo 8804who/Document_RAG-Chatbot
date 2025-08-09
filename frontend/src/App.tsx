@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import LoginPage from './pages/LoginPage';
 import ChatPage from './pages/ChatPage';
 import DocumentUploadPage from './pages/DocumentUploadPage';
-import { useAuth } from './hooks/useAuth';
+import { useAuth, AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
 const NavBar: React.FC = () => {
@@ -19,24 +19,28 @@ const NavBar: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Router>
+    <>
       <NavBar />
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route
-          path="/chat"
-          element={isAuthenticated ? <ChatPage /> : <LoginPage />}
-        />
-        <Route
-          path="/upload"
-          element={isAuthenticated ? <DocumentUploadPage /> : <LoginPage />}
-        />
+        <Route path="/chat" element={isAuthenticated ? <ChatPage /> : <LoginPage />} />
+        <Route path="/upload" element={isAuthenticated ? <DocumentUploadPage /> : <LoginPage />} />
       </Routes>
-    </Router>
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   );
 };
 

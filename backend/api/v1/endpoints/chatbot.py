@@ -22,7 +22,8 @@ async def chat(request: ChatRequest) -> dict:
     """
     try:
         answer = get_answer(user_query=request.message)
-        return {"message": answer}
+        print(f"answer: {answer}")
+        return {"message": answer.content}
     except Exception as e:
         logging.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))

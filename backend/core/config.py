@@ -5,8 +5,9 @@ load_dotenv()
 
 BASE_URL = os.getenv("BASE_URL")
 
-# API KEY
+# OPENAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL")
 
 # DB
 DB_HOST = os.getenv("DB_HOST")
