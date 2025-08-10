@@ -1,3 +1,4 @@
+from core import config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -16,7 +17,7 @@ app.add_middleware(
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key="12312dadl3l1k3k",  # 반드시 랜덤하고 안전한 값으로 설정 (배포 시 중요!)
+    secret_key=config.SESSION_SECRET_KEY,
 )
 
 app.include_router(api_router, prefix="/api")

@@ -1,15 +1,14 @@
 from authlib.integrations.starlette_client import OAuth
+from core import config
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import HTMLResponse
-from core import config
-from starlette.responses import RedirectResponse, JSONResponse
-import logging
-import requests
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
-from google.auth import jwt
+from util.auth import save_google_oauth_token, get_google_oauth_token
 import json
+import logging
+import requests
 
 
 auth_router = APIRouter()
@@ -100,7 +99,9 @@ async def verify_google_id_token(id_token_str: str) -> dict:
 @auth_router.get("/login")
 async def login(request: Request):
     redirect_uri = f"{BASE_URL}/api/v1/auth/login/callback"
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(
+        request, redirect_uri, access_type="offline", prompt="consent"
+    )
 
 
 @auth_router.get("/login/callback")
@@ -111,12 +112,13 @@ async def auth(request: Request):
     userinfo_json = token.get("userinfo", {})
     userinfo_str = json.dumps(userinfo_json)
 
-    if token["refresh_token"]:
-        refresh_token = token["refresh_token"]
-    else:
-        refresh_token = None
-
-    print(f"refresh_token: {refresh_token}")
+    refresh_token = token["refresh_token"]
+    if refresh_token:
+        save_google_oauth_token(
+            name=userinfo_json.get("name"),
+            email=userinfo_json.get("email"),
+            refresh_token=refresh_token,
+        )
 
     html_content = f"""
     <html>
@@ -179,7 +181,7 @@ async def refresh_token(request: Request) -> dict:
     """
     try:
         body = await request.json()
-        refresh_token = body.get("refresh_token")
+        refresh_token = get_google_oauth_token(body.get("email"))
 
         if not refresh_token:
             raise HTTPException(status_code=400, detail="Refresh token is required")
