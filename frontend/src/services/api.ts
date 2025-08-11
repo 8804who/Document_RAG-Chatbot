@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axiosInstance  from '../hooks/interceptor';
 
 export const chat = async (message: string, token: string) => {
-  const response = await axios.post(
+  const response = await axiosInstance.post(
     `/api/v1/chatbot/chat`,
     { message },
     { headers: { Authorization: `Bearer ${token}` } }
@@ -12,7 +12,7 @@ export const chat = async (message: string, token: string) => {
 export const uploadDocument = async (file: File, token: string) => {
   const formData = new FormData();
   formData.append('file', file);
-  const response = await axios.post(`/api/upload`, formData, {
+  const response = await axiosInstance.post(`/api/upload`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
       Authorization: `Bearer ${token}`,
