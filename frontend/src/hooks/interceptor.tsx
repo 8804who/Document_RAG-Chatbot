@@ -3,7 +3,7 @@ import { getAccessToken, setAccessToken, removeAccessToken } from '../services/t
 
 // axios 인스턴스 생성
 const api = axios.create({
-  baseURL: 'http://localhost:10004/api/v1',
+  baseURL: 'http://localhost:10004',
   timeout: 10000,
   withCredentials: true, // 모든 요청에 쿠키 포함 (refresh token이 쿠키에 있는 경우)
 });

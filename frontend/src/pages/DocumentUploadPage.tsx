@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { uploadDocument } from '../services';
-import { getAccessToken } from '../services/token_service';
 import '../styles/DocumentUploadPage.css';
 
 const DocumentUploadPage: React.FC = () => {
@@ -18,8 +17,7 @@ const DocumentUploadPage: React.FC = () => {
     setLoading(true);
     setStatus('');
     try {
-      const token = getAccessToken() || '';
-      const data = await uploadDocument(file, token);
+      const data = await uploadDocument(file);
       setStatus('Upload successful!');
     } catch {
       setStatus('Upload failed.');

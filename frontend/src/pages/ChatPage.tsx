@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { chat } from '../services';
-import { getAccessToken } from '../services/token_service';
 import '../styles/ChatPage.css';
-import { get } from 'http';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -26,8 +24,7 @@ const ChatPage: React.FC = () => {
     setMessages(msgs => [...msgs, userMsg]);
     setLoading(true);
     try {
-      const token = getAccessToken() || '';
-      const data = await chat(input, token);
+      const data = await chat(input);
       setMessages(msgs => [...msgs, { sender: 'bot', text: data.message } as Message]);
     } catch {
       setMessages(msgs => [...msgs, { sender: 'bot', text: 'Error: Could not get response.' } as Message]);
