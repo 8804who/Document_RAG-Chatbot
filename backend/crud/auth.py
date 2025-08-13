@@ -1,4 +1,5 @@
 from models.auth import GoogleOauth
+from sqlalchemy import insert, select
 from sqlalchemy.orm import Session
 
 
@@ -18,12 +19,11 @@ def save_google_oauth_token(
         None
     """
     try:
-        db_google_oauth = GoogleOauth(
+        stmt = insert(GoogleOauth).values(
             name=name, email=email, refresh_token=refresh_token
         )
-        db.add(db_google_oauth)
+        db.execute(stmt)
         db.commit()
-        db.refresh(db_google_oauth)
     except Exception as e:
         db.rollback()
         raise e
@@ -41,6 +41,7 @@ def get_google_oauth_token(db: Session, email: str) -> str:
         str: The Google OAuth token.
     """
     try:
-        return db.query(GoogleOauth).filter(GoogleOauth.email == email).first()
+        stmt = select(GoogleOauth).where(GoogleOauth.email == email)
+        return db.execute(stmt).first()
     except Exception as e:
         raise e
