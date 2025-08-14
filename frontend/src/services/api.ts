@@ -8,10 +8,11 @@ export const chat = async (message: string) => {
   return response.data;
 };
 
-export const uploadDocument = async (file: File) => {
+export const uploadDocument = async (document: File) => {
   const formData = new FormData();
-  formData.append('file', file);
-  const response = await axiosInstance.post(`/api/upload`, formData, {
+  formData.append('document', document);
+  
+  const response = await axiosInstance.post(`/api/v1/documents/user`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

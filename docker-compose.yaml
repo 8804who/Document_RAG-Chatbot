@@ -10,14 +10,5 @@ services:
       POSTGRES_DB: chatbot_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chatbot_chromadb
-    ports:
-      - 8100:8000
-    volumes:
-      - chromadb_data:/chroma_db
-
 volumes:
   postgres_data:
-  chromadb_data:
