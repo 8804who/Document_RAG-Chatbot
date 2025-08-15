@@ -1,5 +1,6 @@
 from models.auth import GoogleOauth
-from sqlalchemy import insert, select
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 
@@ -19,8 +20,13 @@ def save_google_oauth_token(
         None
     """
     try:
-        stmt = insert(GoogleOauth).values(
-            name=name, email=email, refresh_token=refresh_token
+        stmt = (
+            insert(GoogleOauth)
+            .values(name=name, email=email, refresh_token=refresh_token)
+            .on_conflict_do_update(
+                index_elements=["email"],
+                set_={"name": name, "refresh_token": refresh_token},
+            )
         )
         db.execute(stmt)
         db.commit()
