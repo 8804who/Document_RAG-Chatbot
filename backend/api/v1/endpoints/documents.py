@@ -13,7 +13,7 @@ async def upload_user_document(
 ) -> dict:
     user_id = current_user.get("sub")
     document_id = str(uuid.uuid4())
-    document_content = document.file.read()
+    document_content = document.file.read().decode("utf-8")
     save_user_document(user_id, document_id, document_content)
     insert_document(user_id, document_id)
     return responses.JSONResponse(
