@@ -43,16 +43,17 @@ async def chat(
     Raises:
         HTTPException: 챗봇 응답 중 오류가 발생한 경우 500 에러 반환
     """
-    # try:
-    logging.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
+    try:
+        logging.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
 
-    answer = get_answer(user_query=request.message)
-    save_chat_log(
-        email=current_user.get("email", "unknown"),
-        query=request.message,
-        response=answer.content,
-    )
-    return {"message": answer.content}
-    # except Exception as e:
-    #     logging.error(f"Error in chat: {e}")
-    #     raise HTTPException(status_code=500, detail=str(e))
+        answer = get_answer(user_query=request.message)
+        logging.info(f"Chat answer: {answer}")
+        save_chat_log(
+            email=current_user.get("email", "unknown"),
+            query=request.message,
+            response=answer,
+        )
+        return {"message": answer}
+    except Exception as e:
+        logging.error(f"Error in chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

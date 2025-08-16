@@ -31,7 +31,7 @@ def save_user_document(user_id: str, document_id: str, document_content: str) ->
     """
     file_path = f"documents/{user_id}/{document_id}.txt"
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(document_content)
 
 
@@ -47,7 +47,7 @@ def get_user_document(user_id: str, document_id: str) -> str:
         str: 파일의 content
     """
     file_path = f"documents/{user_id}/{document_id}.txt"
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
