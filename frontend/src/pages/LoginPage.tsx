@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { setAccessToken } from '../services/token_service';
 import { useAuth } from '../contexts/AuthContext';
+import '../styles/LoginPage.css';
 
 interface OAuthMessageData {
   access_token: string;
@@ -50,8 +51,12 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <button onClick={loginOauth}>구글 로그인</button>
+    <div className="login-container">
+      <form className="login-form" onSubmit={(e) => { e.preventDefault(); loginOauth(); }}>
+        <div className="login-title">Sign in</div>
+        <button type="submit">Continue with Google</button>
+        <div className="login-footer">Secure OAuth sign-in</div>
+      </form>
     </div>
   );
 };

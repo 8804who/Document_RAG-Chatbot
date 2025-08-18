@@ -12,8 +12,10 @@ const NavBar: React.FC = () => {
   if (!isAuthenticated) return null;
   return (
     <nav className="navbar">
-      <Link to="/chat" className={location.pathname === '/chat' ? 'active' : ''}>Chat</Link>
-      <Link to="/upload" className={location.pathname === '/upload' ? 'active' : ''}>Upload</Link>
+      <div className="navbar-links">
+        <Link to="/chat" className={location.pathname === '/chat' ? 'active' : ''}>Chat</Link>
+        <Link to="/upload" className={location.pathname === '/upload' ? 'active' : ''}>Upload</Link>
+      </div>
       <button onClick={logout} className="logout-btn">Logout</button>
     </nav>
   );

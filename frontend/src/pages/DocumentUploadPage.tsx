@@ -29,12 +29,14 @@ const DocumentUploadPage: React.FC = () => {
 
   return (
     <div className="upload-container">
-      <form className="upload-form" onSubmit={handleUpload}>
-        <h2>Upload Document</h2>
-        <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFileChange} />
-        <button type="submit" disabled={loading || !file}>{loading ? 'Uploading...' : 'Upload'}</button>
-        {status && <div className="upload-status">{status}</div>}
-      </form>
+      <div className="upload-shell">
+        <div className="upload-title">Upload</div>
+        <form className="upload-form" onSubmit={handleUpload}>
+          <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFileChange} />
+          <button type="submit" disabled={loading || !file}>{loading ? 'Uploading...' : 'Upload'}</button>
+          {status && <div className="upload-status">{status}</div>}
+        </form>
+      </div>
     </div>
   );
 };
