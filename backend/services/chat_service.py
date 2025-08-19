@@ -45,7 +45,7 @@ def get_chat_model() -> ChatOpenAI:
     return ChatOpenAI(api_key=SecretStr(OPENAI_API_KEY), model=OPENAI_MODEL)
 
 
-def get_answer(user_query: str, session_id: str) -> str:
+async def get_answer(user_query: str, session_id: str) -> str:
     """
     유저의 질문에 응답을 반환
 

@@ -48,7 +48,7 @@ async def chat(
 
         # 유저 이메일을 세션 아이디로 사용
         session_id = current_user.get("email", "unknown")
-        answer = get_answer(user_query=request.message, session_id=session_id)
+        answer = await get_answer(user_query=request.message, session_id=session_id)
         logging.info(f"Chat answer: {answer}")
         save_chat_log(
             email=current_user.get("email", "unknown"),
