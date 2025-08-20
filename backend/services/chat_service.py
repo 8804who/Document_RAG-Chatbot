@@ -1,7 +1,7 @@
 from core import config
 from fastapi import HTTPException
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
@@ -60,32 +60,32 @@ async def get_answer(user_query: str, session_id: str) -> str:
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", "You are a helpful assistant."),
-                ("placeholder", "{chat_history}"),
+                MessagesPlaceholder(variable_name="chat_history"),
                 (
                     "user",
                     "Answer the question based on the following context: {context}",
                 ),
-                ("user", "Question: {question}"),
+                ("user", "Question: {user_query}"),
             ]
         )
 
         contexts = retrieve_context(user_query)
         context = "\n".join([doc.page_content for doc in contexts["context"]])
 
-        chain = prompt | model
+        chain = prompt | model | StrOutputParser()
 
         chain_with_history = RunnableWithMessageHistory(
             chain,
             lambda sid: _get_history(sid),
-            input_messages_key="question",
+            input_messages_key="user_query",
             history_messages_key="chat_history",
         )
 
         result = chain_with_history.invoke(
-            {"context": context, "question": user_query},
+            {"context": context, "user_query": user_query},
             config={"configurable": {"session_id": session_id}},
         )
-        return result.content
+        return result
     except Exception as e:
         logging.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
