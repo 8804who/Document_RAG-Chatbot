@@ -1,5 +1,11 @@
+from core import config
 from crud import chat_log as chat_log_crud
 from db.database import get_db
+
+LANGSMITH_TRACING=config.LANGSMITH_TRACING
+LANGSMITH_ENDPOINT=config.LANGSMITH_ENDPOINT
+LANGSMITH_API_KEY=config.LANGSMITH_API_KEY
+LANGSMITH_PROJECT=config.LANGSMITH_PROJECT
 
 
 def save_chat_log(email: str, query: str, response: str) -> None:
