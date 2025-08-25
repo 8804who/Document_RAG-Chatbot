@@ -1,10 +1,13 @@
 from core import config
 from fastapi import HTTPException
-from langchain_openai import ChatOpenAI
+from langchain_core.messages import trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+from operator import itemgetter
 from pydantic import SecretStr
 from util.document import vector_store
 import logging
@@ -14,6 +17,7 @@ import textwrap
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
 
+trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=len)
 _CHAT_HISTORIES: Dict[str, ChatMessageHistory] = {}
 
 
@@ -116,10 +120,14 @@ async def get_answer(user_query: str, session_id: str) -> str:
         contexts = retrieve_context(user_query)
         context = "\n".join([doc.page_content for doc in contexts["context"]])
 
-        chain = prompt | model | StrOutputParser()
+        chain = prompt | model
+
+        chain_with_trimmer = RunnablePassthrough.assign(
+            chat_history=itemgetter("chat_history") | trimmer
+        ) | chain
 
         chain_with_history = RunnableWithMessageHistory(
-            chain,
+            chain_with_trimmer,
             lambda sid: _get_history(sid),
             input_messages_key="user_query",
             history_messages_key="chat_history",
