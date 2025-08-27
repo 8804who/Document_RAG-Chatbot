@@ -8,6 +8,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_openai import ChatOpenAI
 from operator import itemgetter
 from pydantic import SecretStr
+from util.tokenizer import OpenAiTokenizer
 from util.document import vector_store
 import logging
 from typing import Dict
@@ -17,7 +18,7 @@ from langchain_core.messages import BaseMessage
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
 
-trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=len)
+trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=OpenAiTokenizer().count_tokens)
 _CHAT_HISTORIES: Dict[str, ChatMessageHistory] = {}
 
 
