@@ -5,19 +5,20 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 from operator import itemgetter
 from pydantic import SecretStr
+from util.tokenizer import OpenAiTokenizer
 from util.document import vector_store
 import logging
 from typing import Dict
 import textwrap
+from langchain_core.messages import BaseMessage
 
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
 
-trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=len)
+trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=OpenAiTokenizer().count_tokens)
 _CHAT_HISTORIES: Dict[str, ChatMessageHistory] = {}
 
 
@@ -50,7 +51,7 @@ def get_chat_model() -> ChatOpenAI:
     return ChatOpenAI(api_key=SecretStr(OPENAI_API_KEY), model=OPENAI_MODEL)
 
 
-async def get_answer(user_query: str, session_id: str) -> str:
+async def get_answer(user_query: str, session_id: str) -> BaseMessage:
     """
     유저의 질문에 응답을 반환
 
@@ -58,7 +59,7 @@ async def get_answer(user_query: str, session_id: str) -> str:
         user_query (str): 유저의 질문
         session_id (str): 세션 아이디
     Returns:
-        str: 응답
+        BaseMessage: 응답
     """
     try:
         model = get_chat_model()
@@ -133,7 +134,7 @@ async def get_answer(user_query: str, session_id: str) -> str:
             history_messages_key="chat_history",
         )
 
-        result = chain_with_history.invoke(
+        result = await chain_with_history.ainvoke(
             {"context": context, "user_query": user_query},
             config={"configurable": {"session_id": session_id}},
         )
