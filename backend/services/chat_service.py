@@ -155,8 +155,8 @@ def retrieve_context(user_query: str) -> str:
         str:
     """
     try:
-        retrived_docs = vector_store.similarity_search(user_query)
-        return {"context": retrived_docs}
+        retrieved_docs = vector_store.similarity_search(user_query)
+        return {"context": retrieved_docs}
     except Exception as e:
         logging.error(f"Error in retrieve_context: {e}")
         raise HTTPException(status_code=500, detail=str(e))
