@@ -1,6 +1,8 @@
 from models.chat_history import ChatHistory
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from typing import Optional, Dict
 
 
 def save_chat_history(db: Session, session_id: str, context: str) -> None:
@@ -13,7 +15,14 @@ def save_chat_history(db: Session, session_id: str, context: str) -> None:
         context: 채팅 히스토리
     """
     try:
-        stmt = insert(ChatHistory).values(session_id=session_id, context=context)
+        stmt = (
+            pg_insert(ChatHistory)
+            .values(session_id=session_id, context=context)
+            .on_conflict_do_update(
+                index_elements=["session_id"],
+                set_={"context": context},
+            )
+        )
         db.execute(stmt)
         db.commit()
     except Exception as e:
@@ -21,7 +30,7 @@ def save_chat_history(db: Session, session_id: str, context: str) -> None:
         raise e
 
 
-def get_chat_history(db: Session, session_id: str) -> ChatHistory:
+def get_chat_history(db: Session, session_id: str) -> Optional[ChatHistory]:
     """
     session_id를 통해 채팅 히스토리 조회
 
