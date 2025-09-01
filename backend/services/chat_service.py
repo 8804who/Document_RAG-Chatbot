@@ -48,7 +48,7 @@ def _get_history(session_id: str) -> ChatMessageHistory:
     return history
 
 
-async def _save_history_to_db(session_id: str, history: ChatMessageHistory) -> None:
+async def _save_history_to_db() -> None:
     """
     채팅 히스토리 저장
 
