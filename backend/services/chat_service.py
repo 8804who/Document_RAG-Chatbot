@@ -14,9 +14,14 @@ import logging
 from typing import Dict
 import textwrap
 from langchain_core.messages import BaseMessage
+from crud import chat_history as chat_history_crud
+from db.database import get_db
+import asyncio
 
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
+
+SAVE_HISTORY_INTERVAL = config.SAVE_HISTORY_INTERVAL
 
 trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=OpenAiTokenizer().count_tokens)
 _CHAT_HISTORIES: Dict[str, ChatMessageHistory] = {}
@@ -32,11 +37,35 @@ def _get_history(session_id: str) -> ChatMessageHistory:
     Returns:
         ChatMessageHistory: 채팅 기록
     """
+
     history = _CHAT_HISTORIES.get(session_id)
     if history is None:
-        history = ChatMessageHistory()
-        _CHAT_HISTORIES[session_id] = history
+        db = next(get_db())
+        history = chat_history_crud.get_chat_history(db, session_id)
+        if history is None:
+            history = ChatMessageHistory()
+
     return history
+
+
+async def _save_history_to_db() -> None:
+    """
+    채팅 히스토리 저장
+
+    Args:
+        session_id (str): 세션 아이디
+        history (ChatMessageHistory): 채팅 히스토리
+    """
+
+    while True:
+        await asyncio.sleep(SAVE_HISTORY_INTERVAL)
+
+        for session_id, history in _CHAT_HISTORIES.items():
+            if history.context is None:
+                continue
+
+            db = next(get_db())
+            chat_history_crud.save_chat_history(db, session_id, history.context)
 
 
 def get_chat_model() -> ChatOpenAI:
