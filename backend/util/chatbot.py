@@ -8,20 +8,20 @@ LANGSMITH_API_KEY=config.LANGSMITH_API_KEY
 LANGSMITH_PROJECT=config.LANGSMITH_PROJECT
 
 
-def save_chat_log(email: str, query: str, response: str) -> None:
+def save_chat_log(email: str, query: str, answer: str) -> None:
     """
     유저 채팅 로그 저장
 
     Args:
         email: 유저 이메일
         query: 유저 메시지
-        response: 챗봇 응답
+        answer: 챗봇 응답
 
     Returns:
         None
     """
     try:
-        db = next(get_db())
-        chat_log_crud.save_chat_log(db, email, query, response)
+        with get_db() as db:
+            chat_log_crud.save_chat_log(db, email, query, answer)
     except Exception as e:
         raise e
