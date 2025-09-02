@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS chat_log (
 );
 
 CREATE TABLE IF NOT EXISTS chat_history (
-	session_id VARCHAR(100) PRIMARY KEY,
-	context VARCHAR(10000),
-	FOREIGN KEY (email) REFERENCES google_oauth(email)
+	session_id VARCHAR(255) PRIMARY KEY,
+	context text
 );
