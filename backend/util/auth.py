@@ -24,8 +24,8 @@ def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
         None
     """
     try:
-        db = next(get_db())
-        auth_crud.save_google_oauth_token(db, name, email, refresh_token)
+        with get_db() as db:
+            auth_crud.save_google_oauth_token(db, name, email, refresh_token)
     except Exception as e:
         raise e
 
@@ -41,8 +41,8 @@ def get_google_oauth_token(email: str) -> str:
         str: The Google OAuth token.
     """
     try:
-        db = next(get_db())
-        return auth_crud.get_google_oauth_token(db, email)
+        with get_db() as db:
+            return auth_crud.get_google_oauth_token(db, email)
     except Exception as e:
         raise e
 

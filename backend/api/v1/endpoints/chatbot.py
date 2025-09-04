@@ -54,7 +54,7 @@ async def chat(
         save_chat_log(
             email=current_user.get("email", "unknown"),
             query=request.message,
-            response=answer,
+            answer=answer,
         )
         return {"message": answer}
     except Exception as e:

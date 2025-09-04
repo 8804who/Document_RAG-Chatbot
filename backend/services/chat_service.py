@@ -13,10 +13,11 @@ from util.document import vector_store
 import logging
 from typing import Dict
 import textwrap
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, messages_from_dict
 from crud import chat_history as chat_history_crud
 from db.database import get_db
 import asyncio
+import json
 
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
@@ -40,11 +41,19 @@ def _get_history(session_id: str) -> ChatMessageHistory:
 
     history = _CHAT_HISTORIES.get(session_id)
     if history is None:
-        db = next(get_db())
-        history = chat_history_crud.get_chat_history(db, session_id)
-        if history is None:
+        with get_db() as db:
+            loaded_history = chat_history_crud.get_chat_history(db, session_id)
+        if loaded_history and getattr(loaded_history, "context", None):
+            try:
+                msgs = messages_from_dict(json.loads(loaded_history.context))
+                history = ChatMessageHistory()
+                history.messages = msgs
+            except Exception as e:
+                logging.error(f"Error in _get_history: {e}")
+                history = ChatMessageHistory()
+        else:
             history = ChatMessageHistory()
-
+        _CHAT_HISTORIES[session_id] = history
     return history
 
 
@@ -63,9 +72,9 @@ async def _save_history_to_db() -> None:
         for session_id, history in _CHAT_HISTORIES.items():
             if history.context is None:
                 continue
-
-            db = next(get_db())
-            chat_history_crud.save_chat_history(db, session_id, history.context)
+            
+            with get_db() as db:
+                chat_history_crud.save_chat_history(db, session_id, history.context)
 
 
 def get_chat_model() -> ChatOpenAI:
@@ -97,7 +106,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
                 (
                     "system",
                     textwrap.dedent(
-                        """
+                    """
                     # Natural Conversation Framework
                     You are a conversational AI focused on engaging in authentic dialogue. Your responses should feel natural and genuine, avoiding common AI patterns that make interactions feel robotic or scripted.
                     ## Core Approach

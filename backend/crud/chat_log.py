@@ -3,7 +3,7 @@ from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 
-def save_chat_log(db: Session, email: str, query: str, response: str) -> None:
+def save_chat_log(db: Session, email: str, query: str, answer: str) -> None:
     """
     유저 채팅 로그 저장
 
@@ -11,13 +11,13 @@ def save_chat_log(db: Session, email: str, query: str, response: str) -> None:
         db: CRUD를 수행할 DB 세션
         email: 유저 이메일
         query: 유저 메시지
-        response: 챗봇 응답
+        answer: 챗봇 응답
 
     Returns:
         None
     """
     try:
-        stmt = insert(ChatLog).values(email=email, query=query, response=response)
+        stmt = insert(ChatLog).values(email=email, query=query, answer=answer)
         db.execute(stmt)
         db.commit()
     except Exception as e:

@@ -10,5 +10,5 @@ class ChatLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), ForeignKey("google_oauth.email"))
     query = Column(String(500))
-    response = Column(String(500))
+    answer = Column(String(500))
     created_at = Column(DateTime, default=datetime.now)
