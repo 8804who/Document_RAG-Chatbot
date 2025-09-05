@@ -9,17 +9,31 @@ class Tokenizer:
         self.model = model
         self.tokenizer = tiktoken.encoding_for_model(model)
 
-    def count_tokens(self, text: str) -> int:
+    def count_tokens(self, text) -> int:
         """
         토큰 수 계산
 
         Args:
-            text (str): 토큰 수를 계산할 텍스트
+            text: 토큰 수를 계산할 텍스트 (str 또는 message 객체)
 
         Returns:
             int: 토큰 수
         """
-        return len(self.tokenizer.encode(text))
+        # Handle different input types
+        if isinstance(text, str):
+            text_content = text
+        elif hasattr(text, 'content'):
+            text_content = text.content
+        elif hasattr(text, 'text'):
+            text_content = text.text
+        else:
+            text_content = str(text)
+        
+        # Ensure we have a string
+        if not isinstance(text_content, str):
+            text_content = str(text_content)
+            
+        return len(self.tokenizer.encode(text_content))
 
 
 class OpenAiTokenizer(Tokenizer):

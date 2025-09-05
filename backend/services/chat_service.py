@@ -180,7 +180,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
         )
         return result
     except Exception as e:
-        logging.error(f"Error in chat: {e}")
+        logging.error(f"Error in chat_service: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
