@@ -1,7 +1,5 @@
 from sqlalchemy import Column, String
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from db.database import Base
 
 
 class GoogleOauth(Base):
