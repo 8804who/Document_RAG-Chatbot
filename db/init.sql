@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS google_oauth (
 CREATE TABLE IF NOT EXISTS chat_log (
 	id SERIAL PRIMARY KEY,
 	email VARCHAR(100),
-	query VARCHAR(500),
-	answer VARCHAR(500),
+	query VARCHAR(5000),
+	answer VARCHAR(5000),
 	created_at TIMESTAMP,
 	FOREIGN KEY (email) REFERENCES google_oauth(email)
 );

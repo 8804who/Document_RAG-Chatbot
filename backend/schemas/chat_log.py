@@ -5,5 +5,5 @@ from datetime import datetime
 class ChatLog(BaseModel):
     username: str
     query: str
-    response: str
+    answer: str
     created_at: datetime

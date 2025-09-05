@@ -13,9 +13,9 @@ from util.document import vector_store
 import logging
 from typing import Dict
 import textwrap
-from langchain_core.messages import BaseMessage, messages_from_dict
+from langchain_core.messages import BaseMessage, messages_from_dict, messages_to_dict
 from crud import chat_history as chat_history_crud
-from db.database import get_db
+from db.database import get_db_session
 import asyncio
 import json
 
@@ -39,20 +39,16 @@ def _get_history(session_id: str) -> ChatMessageHistory:
         ChatMessageHistory: 채팅 기록
     """
 
-    history = _CHAT_HISTORIES.get(session_id)
-    if history is None:
-        with get_db() as db:
-            loaded_history = chat_history_crud.get_chat_history(db, session_id)
+    with get_db_session() as db:
+        loaded_history = chat_history_crud.get_chat_history(db, session_id)
+        
+        history = ChatMessageHistory()
         if loaded_history and getattr(loaded_history, "context", None):
             try:
-                msgs = messages_from_dict(json.loads(loaded_history.context))
-                history = ChatMessageHistory()
-                history.messages = msgs
-            except Exception as e:
-                logging.error(f"Error in _get_history: {e}")
-                history = ChatMessageHistory()
-        else:
-            history = ChatMessageHistory()
+                payload = json.loads(loaded_history.context)
+                history.messages = messages_from_dict(payload)
+            except (json.JSONDecodeError, ValueError, TypeError):                
+                logging.exception("Failed to deserialize chat history for session_id=%s", session_id)
         _CHAT_HISTORIES[session_id] = history
     return history
 
@@ -69,12 +65,18 @@ async def _save_history_to_db() -> None:
     while True:
         await asyncio.sleep(SAVE_HISTORY_INTERVAL)
 
-        for session_id, history in _CHAT_HISTORIES.items():
-            if history.context is None:
+        for session_id, history in list(_CHAT_HISTORIES.items()):
+            if not getattr(history, "messages", None):
                 continue
-            
-            with get_db() as db:
-                chat_history_crud.save_chat_history(db, session_id, history.context)
+                
+            try:
+                serialized = json.dumps(messages_to_dict(history.messages), ensure_ascii=False)
+            except Exception:
+                logging.exception("Failed to serialize chat history for session_id=%s", session_id)
+                continue
+
+            with get_db_session() as db:
+                chat_history_crud.save_chat_history(db, session_id, serialized)
 
 
 def get_chat_model() -> ChatOpenAI:
@@ -178,7 +180,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
         )
         return result
     except Exception as e:
-        logging.error(f"Error in chat: {e}")
+        logging.error(f"Error in chat_service: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

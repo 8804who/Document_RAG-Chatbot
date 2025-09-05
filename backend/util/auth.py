@@ -1,6 +1,6 @@
 from core import config
 from crud import auth as auth_crud
-from db.database import get_db
+from db.database import get_db_session
 from fastapi import HTTPException
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
@@ -24,7 +24,7 @@ def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
         None
     """
     try:
-        with get_db() as db:
+        with get_db_session() as db:
             auth_crud.save_google_oauth_token(db, name, email, refresh_token)
     except Exception as e:
         raise e
@@ -41,7 +41,7 @@ def get_google_oauth_token(email: str) -> str:
         str: The Google OAuth token.
     """
     try:
-        with get_db() as db:
+        with get_db_session() as db:
             return auth_crud.get_google_oauth_token(db, email)
     except Exception as e:
         raise e
