@@ -15,7 +15,7 @@ from typing import Dict
 import textwrap
 from langchain_core.messages import BaseMessage, messages_from_dict
 from crud import chat_history as chat_history_crud
-from db.database import get_db
+from db.database import get_db_session
 import asyncio
 import json
 
@@ -41,7 +41,7 @@ def _get_history(session_id: str) -> ChatMessageHistory:
 
     history = _CHAT_HISTORIES.get(session_id)
     if history is None:
-        with get_db() as db:
+        with get_db_session() as db:
             loaded_history = chat_history_crud.get_chat_history(db, session_id)
         if loaded_history and getattr(loaded_history, "context", None):
             try:
@@ -73,7 +73,7 @@ async def _save_history_to_db() -> None:
             if history.context is None:
                 continue
             
-            with get_db() as db:
+            with get_db_session() as db:
                 chat_history_crud.save_chat_history(db, session_id, history.context)
 
 
