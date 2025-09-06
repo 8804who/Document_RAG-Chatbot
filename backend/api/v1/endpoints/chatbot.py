@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from schemas.chat import ChatRequest
 from services.chat_service import get_answer
 from util.chatbot import save_chat_log
+from util.session_id import session_id_management
 from util.dependencies import get_current_user
 import logging
 
@@ -46,16 +47,18 @@ async def chat(
     try:
         logging.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
 
-        # 유저 이메일을 세션 아이디로 사용
-        session_id = current_user.get("email", "unknown")
+        session_id = session_id_management(current_user.get("email", "unknown"))
         response = await get_answer(user_query=request.message, session_id=session_id)
         answer = response.content
         logging.info(f"Chat answer: {answer}")
+        
+        # 개별 채팅 로그 저장
         save_chat_log(
             email=current_user.get("email", "unknown"),
             query=request.message,
             answer=answer,
         )
+        
         return {"message": answer}
     except Exception as e:
         logging.error(f"Error in chat: {e}")

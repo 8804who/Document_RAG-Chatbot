@@ -49,8 +49,3 @@ SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 # Chunking
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP"))
-
-# CHAT HISTORY
-SAVE_HISTORY_INTERVAL = int(os.getenv("SAVE_HISTORY_INTERVAL"))
-if SAVE_HISTORY_INTERVAL <= 0:
-    raise ValueError("SAVE_HISTORY_INTERVAL는 0보다 커야합니다.")
