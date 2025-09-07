@@ -4,80 +4,21 @@ from langchain_core.messages import trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_openai import ChatOpenAI
 from operator import itemgetter
+from util.chat_history import get_chat_history_sync
 from pydantic import SecretStr
 from util.tokenizer import OpenAiTokenizer
 from util.document import vector_store
 import logging
-from typing import Dict
 import textwrap
-from langchain_core.messages import BaseMessage, messages_from_dict, messages_to_dict
-from crud import chat_history as chat_history_crud
-from db.database import get_db_session
-import asyncio
-import json
+from langchain_core.messages import BaseMessage
+
 
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
 
-SAVE_HISTORY_INTERVAL = config.SAVE_HISTORY_INTERVAL
-
-trimmer = trim_messages(strategy="last", max_tokens=10, token_counter=OpenAiTokenizer().count_tokens)
-_CHAT_HISTORIES: Dict[str, ChatMessageHistory] = {}
-
-
-def _get_history(session_id: str) -> ChatMessageHistory:
-    """
-    세션 아이디에 대한 채팅 기록 반환
-
-    Args:
-        session_id (str): 세션 아이디
-
-    Returns:
-        ChatMessageHistory: 채팅 기록
-    """
-
-    with get_db_session() as db:
-        loaded_history = chat_history_crud.get_chat_history(db, session_id)
-        
-        history = ChatMessageHistory()
-        if loaded_history and getattr(loaded_history, "context", None):
-            try:
-                payload = json.loads(loaded_history.context)
-                history.messages = messages_from_dict(payload)
-            except (json.JSONDecodeError, ValueError, TypeError):                
-                logging.exception("Failed to deserialize chat history for session_id=%s", session_id)
-        _CHAT_HISTORIES[session_id] = history
-    return history
-
-
-async def _save_history_to_db() -> None:
-    """
-    채팅 히스토리 저장
-
-    Args:
-        session_id (str): 세션 아이디
-        history (ChatMessageHistory): 채팅 히스토리
-    """
-
-    while True:
-        await asyncio.sleep(SAVE_HISTORY_INTERVAL)
-
-        for session_id, history in list(_CHAT_HISTORIES.items()):
-            if not getattr(history, "messages", None):
-                continue
-                
-            try:
-                serialized = json.dumps(messages_to_dict(history.messages), ensure_ascii=False)
-            except Exception:
-                logging.exception("Failed to serialize chat history for session_id=%s", session_id)
-                continue
-
-            with get_db_session() as db:
-                chat_history_crud.save_chat_history(db, session_id, serialized)
-
+trimmer = trim_messages(strategy="last", max_tokens=100, token_counter=OpenAiTokenizer().count_tokens)
 
 def get_chat_model() -> ChatOpenAI:
     """
@@ -169,7 +110,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
 
         chain_with_history = RunnableWithMessageHistory(
             chain_with_trimmer,
-            lambda sid: _get_history(sid),
+            get_chat_history_sync,
             input_messages_key="user_query",
             history_messages_key="chat_history",
         )
@@ -178,6 +119,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
             {"context": context, "user_query": user_query},
             config={"configurable": {"session_id": session_id}},
         )
+        
         return result
     except Exception as e:
         logging.error(f"Error in chat_service: {e}")

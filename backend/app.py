@@ -4,9 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from api.v1.router import api_router
 import uvicorn
-from contextlib import asynccontextmanager, suppress
-from services.chat_service import _save_history_to_db
-import asyncio
+from contextlib import asynccontextmanager
 
 
 @asynccontextmanager
@@ -17,14 +15,11 @@ async def lifespan(app: FastAPI):
     Args:
         app (FastAPI): FastAPI 애플리케이션
     """
-    task = asyncio.create_task(_save_history_to_db())
-    app.state.history_persist_task = task
     try:
+        print("Server is starting...")
         yield
     finally:
-        task.cancel()
-        with suppress(asyncio.CancelledError):
-            await task
+        print("Server is stopping...")
 
 
 app = FastAPI(lifespan=lifespan)
