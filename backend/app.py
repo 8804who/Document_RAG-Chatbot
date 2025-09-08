@@ -5,6 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from api.v1.router import api_router
 import uvicorn
 from contextlib import asynccontextmanager
+from util.chat_history import init_chat_history, close_chat_history
 
 
 @asynccontextmanager
@@ -17,9 +18,11 @@ async def lifespan(app: FastAPI):
     """
     try:
         print("Server is starting...")
+        await init_chat_history()
         yield
     finally:
         print("Server is stopping...")
+        await close_chat_history()
 
 
 app = FastAPI(lifespan=lifespan)

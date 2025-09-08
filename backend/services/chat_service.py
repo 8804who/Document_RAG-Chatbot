@@ -6,7 +6,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 from operator import itemgetter
-from util.chat_history import get_chat_history_sync
+from util.chat_history import get_chat_history
 from pydantic import SecretStr
 from util.tokenizer import OpenAiTokenizer
 from util.document import vector_store
@@ -110,7 +110,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
 
         chain_with_history = RunnableWithMessageHistory(
             chain_with_trimmer,
-            get_chat_history_sync,
+            get_chat_history,
             input_messages_key="user_query",
             history_messages_key="chat_history",
         )
