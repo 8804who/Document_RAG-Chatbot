@@ -18,7 +18,7 @@ from langchain_core.messages import BaseMessage
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
 
-trimmer = trim_messages(strategy="last", max_tokens=100, token_counter=OpenAiTokenizer().count_tokens)
+trimmer = trim_messages(strategy="last", max_tokens=2000, token_counter=OpenAiTokenizer().count_tokens)
 
 def get_chat_model() -> ChatOpenAI:
     """
