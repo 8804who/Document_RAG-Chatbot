@@ -4,7 +4,7 @@ from db.database import get_db_session
 from fastapi import HTTPException
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
-import requests
+import httpx
 import logging
 
 GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID
@@ -58,9 +58,10 @@ async def verify_google_token(token: str) -> dict:
         dict: 토큰 정보
     """
     try:
-        response = requests.get(
-            f"https://oauth2.googleapis.com/tokeninfo?access_token={token}"
-        )
+        with httpx.AsyncClient() as client:
+            response = client.get(
+                f"https://oauth2.googleapis.com/tokeninfo?access_token={token}"
+            )
 
         if response.status_code == 200:
             token_info = response.json()
@@ -80,7 +81,7 @@ async def verify_google_token(token: str) -> dict:
         else:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-    except requests.RequestException as e:
+    except httpx.RequestException as e:
         logging.error(f"Token verification failed: {e}")
         raise HTTPException(status_code=401, detail="Token verification failed")
 
