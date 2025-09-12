@@ -120,8 +120,8 @@ async def refresh_token(request: Request) -> dict:
         if not refresh_token:
             raise HTTPException(status_code=400, detail="Refresh token is required")
 
-        with httpx.AsyncClient() as client:
-            response = client.post(
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
                 "https://oauth2.googleapis.com/token",
                 data={
                     "client_id": GOOGLE_CLIENT_ID,
@@ -158,8 +158,8 @@ async def logout(request: Request):
         if not access_token:
             raise HTTPException(status_code=400, detail="Access token is required")
 
-        with httpx.AsyncClient() as client:
-            response = client.post(
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
                 "https://oauth2.googleapis.com/revoke", data={"token": access_token}
             )
 

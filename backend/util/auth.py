@@ -58,8 +58,8 @@ async def verify_google_token(token: str) -> dict:
         dict: 토큰 정보
     """
     try:
-        with httpx.AsyncClient() as client:
-            response = client.get(
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
                 f"https://oauth2.googleapis.com/tokeninfo?access_token={token}"
             )
 
