@@ -11,7 +11,7 @@ from util.auth import (
 )
 import json
 import logging
-import requests
+import httpx
 
 auth_router = APIRouter()
 security = HTTPBearer()
@@ -120,15 +120,16 @@ async def refresh_token(request: Request) -> dict:
         if not refresh_token:
             raise HTTPException(status_code=400, detail="Refresh token is required")
 
-        response = requests.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "refresh_token": refresh_token,
-                "grant_type": "refresh_token",
-            },
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "refresh_token": refresh_token,
+                    "grant_type": "refresh_token",
+                },
+            )
 
         if response.status_code == 200:
             token_data = response.json()
@@ -157,9 +158,10 @@ async def logout(request: Request):
         if not access_token:
             raise HTTPException(status_code=400, detail="Access token is required")
 
-        response = requests.post(
-            "https://oauth2.googleapis.com/revoke", data={"token": access_token}
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://oauth2.googleapis.com/revoke", data={"token": access_token}
+            )
 
         if response.status_code == 200:
             return {"message": "Token revoked successfully"}
