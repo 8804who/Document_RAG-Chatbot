@@ -48,7 +48,7 @@ async def auth(request: Request):
 
     refresh_token = token["refresh_token"]
     if refresh_token:
-        save_google_oauth_token(
+        await save_google_oauth_token(
             name=userinfo_json.get("name"),
             email=userinfo_json.get("email"),
             refresh_token=refresh_token,
@@ -115,7 +115,7 @@ async def refresh_token(request: Request) -> dict:
     """
     try:
         body = await request.json()
-        refresh_token = get_google_oauth_token(body.get("email"))
+        refresh_token = await get_google_oauth_token(body.get("email"))
 
         if not refresh_token:
             raise HTTPException(status_code=400, detail="Refresh token is required")

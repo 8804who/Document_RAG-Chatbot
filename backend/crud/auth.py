@@ -2,10 +2,11 @@ from models.auth import GoogleOauth
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-def save_google_oauth_token(
-    db: Session, name: str, email: str, refresh_token: str
+async def save_google_oauth_token(
+    db: AsyncSession, name: str, email: str, refresh_token: str
 ) -> None:
     """
     Save the Google OAuth token to the database.
@@ -28,14 +29,14 @@ def save_google_oauth_token(
                 set_={"name": name, "refresh_token": refresh_token},
             )
         )
-        db.execute(stmt)
-        db.commit()
+        await db.execute(stmt)
+        await db.commit()
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         raise e
 
 
-def get_google_oauth_token(db: Session, email: str) -> str:
+async def get_google_oauth_token(db: AsyncSession, email: str) -> str:
     """
     Get the Google OAuth token from the database.
 
@@ -48,6 +49,6 @@ def get_google_oauth_token(db: Session, email: str) -> str:
     """
     try:
         stmt = select(GoogleOauth).where(GoogleOauth.email == email)
-        return db.execute(stmt).first()
+        return (await db.execute(stmt)).first()
     except Exception as e:
         raise e

@@ -1,6 +1,6 @@
 from core import config
 from crud import auth as auth_crud
-from db.database import get_db_session
+from db.database import get_async_db_session
 from fastapi import HTTPException
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
@@ -11,7 +11,7 @@ GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = config.GOOGLE_CLIENT_SECRET
 
 
-def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
+async def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
     """
     Save the Google OAuth token to the database.
 
@@ -24,13 +24,13 @@ def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
         None
     """
     try:
-        with get_db_session() as db:
-            auth_crud.save_google_oauth_token(db, name, email, refresh_token)
+        async with get_async_db_session() as db:
+            await auth_crud.save_google_oauth_token(db, name, email, refresh_token)
     except Exception as e:
         raise e
 
 
-def get_google_oauth_token(email: str) -> str:
+async def get_google_oauth_token(email: str) -> str:
     """
     Get the Google OAuth token from the database.
 
@@ -41,8 +41,8 @@ def get_google_oauth_token(email: str) -> str:
         str: The Google OAuth token.
     """
     try:
-        with get_db_session() as db:
-            return auth_crud.get_google_oauth_token(db, email)
+        async with get_async_db_session() as db:
+            return await auth_crud.get_google_oauth_token(db, email)
     except Exception as e:
         raise e
 

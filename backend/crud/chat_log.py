@@ -1,9 +1,10 @@
 from models.chat_log import ChatLog
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-def save_chat_log(db: Session, email: str, query: str, answer: str) -> None:
+async def save_chat_log(db: AsyncSession, email: str, query: str, answer: str) -> None:
     """
     유저 채팅 로그 저장
 
@@ -18,8 +19,8 @@ def save_chat_log(db: Session, email: str, query: str, answer: str) -> None:
     """
     try:
         stmt = insert(ChatLog).values(email=email, query=query, answer=answer)
-        db.execute(stmt)
-        db.commit()
+        await db.execute(stmt)
+        await db.commit()
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         raise e
