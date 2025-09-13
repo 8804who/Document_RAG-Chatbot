@@ -108,6 +108,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
             chat_history=itemgetter("chat_history") | trimmer
         ) | chain
 
+
         chain_with_history = RunnableWithMessageHistory(
             chain_with_trimmer,
             get_chat_history,
