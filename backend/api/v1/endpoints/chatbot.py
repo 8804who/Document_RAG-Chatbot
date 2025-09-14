@@ -53,7 +53,7 @@ async def chat(
         logging.info(f"Chat answer: {answer}")
         
         # 개별 채팅 로그 저장
-        save_chat_log(
+        await save_chat_log(
             email=current_user.get("email", "unknown"),
             query=request.message,
             answer=answer,
