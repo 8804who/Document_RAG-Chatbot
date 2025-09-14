@@ -18,4 +18,19 @@ export const uploadDocument = async (document: File) => {
     },
   });
   return response.data;
+};
+
+export const getDocuments = async () => {
+  const response = await axiosInstance.get('/api/v1/documents/user');
+  return response.data;
+};
+
+export const getDocumentContent = async (documentId: string) => {
+  const response = await axiosInstance.get(`/api/v1/documents/user/${documentId}`);
+  return response.data;
+};
+
+export const deleteDocument = async (documentId: string) => {
+  const response = await axiosInstance.delete(`/api/v1/documents/user/${documentId}`);
+  return response.data;
 }; 

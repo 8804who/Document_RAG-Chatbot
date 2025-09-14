@@ -20,7 +20,9 @@ vector_store = Chroma(
 )
 
 
-def save_user_document(user_id: str, document_id: str, document_content: str) -> None:
+def save_user_document_to_file(
+    user_id: str, document_id: str, document_content: str
+) -> None:
     """
     파일 저장
 
@@ -35,7 +37,7 @@ def save_user_document(user_id: str, document_id: str, document_content: str) ->
         f.write(document_content)
 
 
-def get_user_document(user_id: str, document_id: str) -> str:
+def read_user_document_from_file(user_id: str, document_id: str) -> str:
     """
     파일 읽어오기
 
@@ -51,7 +53,18 @@ def get_user_document(user_id: str, document_id: str) -> str:
         return f.read()
 
 
-def insert_document(user_id: str, document_id: str) -> None:
+def get_user_documents_from_vector_store(user_id: str) -> list[str]:
+    """
+    사용자의 문서 목록 조회
+
+    Args:
+        user_id (str): 사용자 ID
+    """
+    documents = vector_store.get(where={"user_id": user_id})
+    return documents
+
+
+def insert_document_to_vector_store(user_id: str, document_id: str) -> None:
     """
     Document content를 vector store에 저장
 
@@ -60,7 +73,7 @@ def insert_document(user_id: str, document_id: str) -> None:
         document_id (str): 문서 ID
     """
     documents = []
-    document_content = get_user_document(user_id, document_id)
+    document_content = read_user_document_from_file(user_id, document_id)
     for chunk in chunk_document(document_content):
         documents.append(
             Document(
