@@ -20,7 +20,9 @@ vector_store = Chroma(
 )
 
 
-def save_user_document(user_id: str, document_id: str, document_content: str) -> None:
+def save_user_document_to_file(
+    user_id: str, document_id: str, document_content: str
+) -> None:
     """
     파일 저장
 
@@ -35,7 +37,7 @@ def save_user_document(user_id: str, document_id: str, document_content: str) ->
         f.write(document_content)
 
 
-def get_user_document(user_id: str, document_id: str) -> str:
+def read_user_document_from_file(user_id: str, document_id: str) -> str:
     """
     파일 읽어오기
 
@@ -51,21 +53,67 @@ def get_user_document(user_id: str, document_id: str) -> str:
         return f.read()
 
 
-def insert_document(user_id: str, document_id: str) -> None:
+def get_user_documents_from_vector_store(user_id: str) -> list[str]:
+    """
+    사용자의 문서 목록 조회
+
+    Args:
+        user_id (str): 사용자 ID
+
+    Returns:
+        list[dict]: 문서 메타데이터 리스트
+    """
+    documents = vector_store._collection.get(
+        where={"user_id": user_id}, include=["metadatas", "documents"]
+    )
+    parsed_document_metadatas = parse_document_metadata(documents)
+    return parsed_document_metadatas
+
+
+def parse_document_metadata(document_metadatas: list[dict]) -> list[dict]:
+    """
+    문서 메타데이터 파싱
+
+    Args:
+        document_metadatas (list[dict]): 문서 메타데이터 리스트
+
+    Returns:
+        list[dict]: 파싱된 문서 메타데이터 리스트
+    """
+    parsed_document_metadatas = [
+        {
+            "document_name": metadata["document_name"],
+            "document_contents": document,
+        }
+        for metadata, document in zip(
+            document_metadatas["metadatas"], document_metadatas["documents"]
+        )
+    ]
+    return parsed_document_metadatas
+
+
+def insert_document_to_vector_store(
+    user_id: str, document_id: str, document_name: str
+) -> None:
     """
     Document content를 vector store에 저장
 
     Args:
         user_id (str): 사용자 ID
         document_id (str): 문서 ID
+        document_name (str): 문서 이름
     """
     documents = []
-    document_content = get_user_document(user_id, document_id)
+    document_content = read_user_document_from_file(user_id, document_id)
     for chunk in chunk_document(document_content):
         documents.append(
             Document(
                 page_content=chunk,
-                metadata={"user_id": user_id, "document_id": document_id},
+                metadata={
+                    "user_id": user_id,
+                    "document_id": document_id,
+                    "document_name": document_name,
+                },
             )
         )
     vector_store.add_documents(documents)
