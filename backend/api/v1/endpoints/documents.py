@@ -19,7 +19,7 @@ async def upload_user_document(
     document_id = str(uuid.uuid4())
     document_content = document.file.read().decode("utf-8")
     save_user_document_to_file(user_id, document_id, document_content)
-    insert_document_to_vector_store(user_id, document_id)
+    insert_document_to_vector_store(user_id, document_id, document.filename)
     return responses.JSONResponse(
         content={"message": "Document uploaded successfully"}, status_code=200
     )
