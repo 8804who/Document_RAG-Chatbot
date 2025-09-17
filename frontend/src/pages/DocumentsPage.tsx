@@ -4,7 +4,7 @@ import '../styles/DocumentsPage.css';
 
 interface DocumentItem {
   document_name: string;
-  document_contents: string;
+  document_contents: string[][];
 }
 
 const DocumentsPage: React.FC = () => {
@@ -13,6 +13,8 @@ const DocumentsPage: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedChunkGroupIndex, setSelectedChunkGroupIndex] = useState<number>(0);
+  const [selectedChunkIndex, setSelectedChunkIndex] = useState<number>(0);
 
   useEffect(() => {
     fetchDocuments();
@@ -28,8 +30,19 @@ const DocumentsPage: React.FC = () => {
       setDocuments(list);
       if (list.length > 0) {
         setSelectedDocument(list[0]);
+        // reset chunk selection
+        const first = list[0];
+        const hasGroups = Array.isArray(first.document_contents) && first.document_contents.length > 0;
+        const firstGroupLen = hasGroups && Array.isArray(first.document_contents[0]) ? first.document_contents[0].length : 0;
+        setSelectedChunkGroupIndex(0);
+        setSelectedChunkIndex(0);
+        if (!firstGroupLen) {
+          setSelectedChunkIndex(0);
+        }
       } else {
         setSelectedDocument(null);
+        setSelectedChunkGroupIndex(0);
+        setSelectedChunkIndex(0);
       }
     } catch (err) {
       setError('Failed to fetch documents. Please try again.');
@@ -41,6 +54,9 @@ const DocumentsPage: React.FC = () => {
 
   const handleDocumentClick = (document: DocumentItem) => {
     setSelectedDocument(document);
+    // reset chunk selection on new doc
+    setSelectedChunkGroupIndex(0);
+    setSelectedChunkIndex(0);
   };
 
   const filteredDocuments = documents.filter(doc =>
@@ -48,6 +64,17 @@ const DocumentsPage: React.FC = () => {
   );
 
   const clearError = () => setError('');
+
+  const getSelectedChunkText = () => {
+    if (!selectedDocument || !Array.isArray(selectedDocument.document_contents)) return '';
+    const groups = selectedDocument.document_contents;
+    if (groups.length === 0) return '';
+    const safeGroupIndex = Math.min(Math.max(selectedChunkGroupIndex, 0), groups.length - 1);
+    const group = groups[safeGroupIndex] || [];
+    const safeChunkIndex = Math.min(Math.max(selectedChunkIndex, 0), Math.max(group.length - 1, 0));
+    const text = group[safeChunkIndex] || '';
+    return text;
+  };
 
   if (loading) {
     return (
@@ -119,6 +146,9 @@ const DocumentsPage: React.FC = () => {
                     <h3 className="document-filename" title={doc.document_name}>
                       {doc.document_name}
                     </h3>
+                    <div className="document-meta">
+                      <span>{Array.isArray(doc.document_contents) ? doc.document_contents.length : 0} chunks</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -143,9 +173,45 @@ const DocumentsPage: React.FC = () => {
               </button>
             </div>
             <div className="content-body">
-              <div className="document-text">
-                {selectedDocument.document_contents || 'No content available'}
-              </div>
+              {Array.isArray(selectedDocument.document_contents) && selectedDocument.document_contents.length > 0 ? (
+                <div className="chunks-view">
+                  <div className="chunks-sidebar">
+                    {selectedDocument.document_contents.map((chunkGroup, groupIndex) => (
+                      <div className="chunk-group" key={`chunk-group-${groupIndex}`}>
+                        <div className="chunk-group-title">Group {groupIndex + 1}</div>
+                        <div className="chunk-list">
+                          {Array.isArray(chunkGroup) && chunkGroup.map((_, chunkIndex) => {
+                            const active = groupIndex === selectedChunkGroupIndex && chunkIndex === selectedChunkIndex;
+                            return (
+                              <button
+                                key={`chunk-${groupIndex}-${chunkIndex}`}
+                                className={`chunk-list-item ${active ? 'active' : ''}`}
+                                onClick={() => {
+                                  setSelectedChunkGroupIndex(groupIndex);
+                                  setSelectedChunkIndex(chunkIndex);
+                                }}
+                                title={`Chunk ${groupIndex + 1}${chunkGroup.length > 1 ? `.${chunkIndex + 1}` : ''}`}
+                              >
+                                Chunk {groupIndex + 1}{chunkGroup.length > 1 ? `.${chunkIndex + 1}` : ''}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="chunk-content">
+                    <div className="chunk-header">
+                      Selected Chunk: {selectedChunkGroupIndex + 1}{(selectedDocument.document_contents[selectedChunkGroupIndex]?.length || 0) > 1 ? `.${selectedChunkIndex + 1}` : ''}
+                    </div>
+                    <div className="chunk-text">
+                      {getSelectedChunkText() || 'No content available'}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="document-text">No content available</div>
+              )}
             </div>
           </div>
         )}

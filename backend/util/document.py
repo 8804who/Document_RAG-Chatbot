@@ -80,13 +80,21 @@ def parse_document_metadata(document_metadatas: list[dict]) -> list[dict]:
     Returns:
         list[dict]: 파싱된 문서 메타데이터 리스트
     """
+    document_dict = {}
+    for metadata, document in zip(
+        document_metadatas["metadatas"], document_metadatas["documents"]
+    ):
+        if metadata["document_name"] not in document_dict:
+            document_dict[metadata["document_name"]] = []
+        document_dict[metadata["document_name"]].append([document])
+    print(document_dict)
     parsed_document_metadatas = [
         {
-            "document_name": metadata["document_name"],
-            "document_contents": document,
+            "document_name": document_name,
+            "document_contents": document_contents,
         }
-        for metadata, document in zip(
-            document_metadatas["metadatas"], document_metadatas["documents"]
+        for document_name, document_contents in zip(
+            document_dict.keys(), document_dict.values()
         )
     ]
     return parsed_document_metadatas
