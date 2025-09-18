@@ -66,6 +66,7 @@ def get_user_documents_from_vector_store(user_id: str) -> list[str]:
     documents = vector_store._collection.get(
         where={"user_id": user_id}, include=["metadatas", "documents"]
     )
+
     parsed_document_metadatas = parse_document_metadata(documents)
     return parsed_document_metadatas
 
@@ -81,23 +82,39 @@ def parse_document_metadata(document_metadatas: list[dict]) -> list[dict]:
         list[dict]: 파싱된 문서 메타데이터 리스트
     """
     document_dict = {}
+
     for metadata, document in zip(
-        document_metadatas["metadatas"], document_metadatas["documents"]
+        document_metadatas["metadatas"],
+        document_metadatas["documents"],
     ):
         if metadata["document_name"] not in document_dict:
-            document_dict[metadata["document_name"]] = []
-        document_dict[metadata["document_name"]].append([document])
-    print(document_dict)
+            document_dict[metadata["document_name"]] = {
+                "document_id": metadata["document_id"],
+                "documents": [],
+            }
+        document_dict[metadata["document_name"]]["documents"].append(document)
+
     parsed_document_metadatas = [
         {
             "document_name": document_name,
-            "document_contents": document_contents,
+            "document_contents": document_contents["documents"],
+            "document_id": document_contents["document_id"],
         }
         for document_name, document_contents in zip(
             document_dict.keys(), document_dict.values()
         )
     ]
     return parsed_document_metadatas
+
+
+def delete_document_from_vector_store(document_id: str) -> None:
+    """
+    문서 삭제
+
+    Args:
+        document_id (str): 문서 ID
+    """
+    vector_store.delete(where={"document_id": document_id})
 
 
 def insert_document_to_vector_store(

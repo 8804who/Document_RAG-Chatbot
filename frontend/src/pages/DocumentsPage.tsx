@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getDocuments } from '../services';
+import { getDocuments, deleteDocument } from '../services';
 import '../styles/DocumentsPage.css';
 
 interface DocumentItem {
   document_name: string;
   document_contents: string[][];
+  document_id: string;
 }
 
 const DocumentsPage: React.FC = () => {
@@ -13,7 +14,6 @@ const DocumentsPage: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedChunkGroupIndex, setSelectedChunkGroupIndex] = useState<number>(0);
   const [selectedChunkIndex, setSelectedChunkIndex] = useState<number>(0);
 
   useEffect(() => {
@@ -26,22 +26,25 @@ const DocumentsPage: React.FC = () => {
       setError('');
       const response = await getDocuments();
       // Expecting backend to return a list like: [{ document_name, document_contents }]
-      const list: DocumentItem[] = Array.isArray(response) ? response : (response?.documents || []);
+      const rawList: any[] = Array.isArray(response) ? response : (response?.documents || []);
+      const list: DocumentItem[] = rawList.map((item: any) => {
+        const contents = item?.document_contents ?? [];
+        const normalizedContents = Array.isArray(contents) && contents.length > 0 && Array.isArray(contents[0])
+          ? contents
+          : [Array.isArray(contents) ? contents : []];
+        return {
+          document_name: item.document_name,
+          document_contents: normalizedContents,
+          document_id: item.document_id,
+        } as DocumentItem;
+      });
       setDocuments(list);
       if (list.length > 0) {
         setSelectedDocument(list[0]);
         // reset chunk selection
-        const first = list[0];
-        const hasGroups = Array.isArray(first.document_contents) && first.document_contents.length > 0;
-        const firstGroupLen = hasGroups && Array.isArray(first.document_contents[0]) ? first.document_contents[0].length : 0;
-        setSelectedChunkGroupIndex(0);
         setSelectedChunkIndex(0);
-        if (!firstGroupLen) {
-          setSelectedChunkIndex(0);
-        }
       } else {
         setSelectedDocument(null);
-        setSelectedChunkGroupIndex(0);
         setSelectedChunkIndex(0);
       }
     } catch (err) {
@@ -52,10 +55,23 @@ const DocumentsPage: React.FC = () => {
     }
   };
 
+  const handleDelete = async (doc: DocumentItem) => {
+    try {
+      setError('');
+      await deleteDocument(doc.document_id);
+      if (selectedDocument?.document_id === doc.document_id) {
+        setSelectedDocument(null);
+      }
+      await fetchDocuments();
+    } catch (err) {
+      setError('Failed to delete document. Please try again.');
+      console.error('Error deleting document:', err);
+    }
+  };
+
   const handleDocumentClick = (document: DocumentItem) => {
     setSelectedDocument(document);
     // reset chunk selection on new doc
-    setSelectedChunkGroupIndex(0);
     setSelectedChunkIndex(0);
   };
 
@@ -67,13 +83,10 @@ const DocumentsPage: React.FC = () => {
 
   const getSelectedChunkText = () => {
     if (!selectedDocument || !Array.isArray(selectedDocument.document_contents)) return '';
-    const groups = selectedDocument.document_contents;
-    if (groups.length === 0) return '';
-    const safeGroupIndex = Math.min(Math.max(selectedChunkGroupIndex, 0), groups.length - 1);
-    const group = groups[safeGroupIndex] || [];
-    const safeChunkIndex = Math.min(Math.max(selectedChunkIndex, 0), Math.max(group.length - 1, 0));
-    const text = group[safeChunkIndex] || '';
-    return text;
+    const flatChunks = selectedDocument.document_contents.flat();
+    if (flatChunks.length === 0) return '';
+    const safeIndex = Math.min(Math.max(selectedChunkIndex, 0), flatChunks.length - 1);
+    return flatChunks[safeIndex] || '';
   };
 
   if (loading) {
@@ -150,6 +163,16 @@ const DocumentsPage: React.FC = () => {
                       <span>{Array.isArray(doc.document_contents) ? doc.document_contents.length : 0} chunks</span>
                     </div>
                   </div>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(doc);
+                    }}
+                    title="Delete document"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
@@ -173,36 +196,28 @@ const DocumentsPage: React.FC = () => {
               </button>
             </div>
             <div className="content-body">
-              {Array.isArray(selectedDocument.document_contents) && selectedDocument.document_contents.length > 0 ? (
+              {Array.isArray(selectedDocument.document_contents) && selectedDocument.document_contents.flat().length > 0 ? (
                 <div className="chunks-view">
                   <div className="chunks-sidebar">
-                    {selectedDocument.document_contents.map((chunkGroup, groupIndex) => (
-                      <div className="chunk-group" key={`chunk-group-${groupIndex}`}>
-                        <div className="chunk-group-title">Group {groupIndex + 1}</div>
-                        <div className="chunk-list">
-                          {Array.isArray(chunkGroup) && chunkGroup.map((_, chunkIndex) => {
-                            const active = groupIndex === selectedChunkGroupIndex && chunkIndex === selectedChunkIndex;
-                            return (
-                              <button
-                                key={`chunk-${groupIndex}-${chunkIndex}`}
-                                className={`chunk-list-item ${active ? 'active' : ''}`}
-                                onClick={() => {
-                                  setSelectedChunkGroupIndex(groupIndex);
-                                  setSelectedChunkIndex(chunkIndex);
-                                }}
-                                title={`Chunk ${groupIndex + 1}${chunkGroup.length > 1 ? `.${chunkIndex + 1}` : ''}`}
-                              >
-                                Chunk {groupIndex + 1}{chunkGroup.length > 1 ? `.${chunkIndex + 1}` : ''}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
+                    <div className="chunk-list">
+                      {selectedDocument.document_contents.flat().map((_, idx) => {
+                        const active = idx === selectedChunkIndex;
+                        return (
+                          <button
+                            key={`chunk-${idx}`}
+                            className={`chunk-list-item ${active ? 'active' : ''}`}
+                            onClick={() => setSelectedChunkIndex(idx)}
+                            title={`Chunk ${idx + 1}`}
+                          >
+                            Chunk {idx + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="chunk-content">
                     <div className="chunk-header">
-                      Selected Chunk: {selectedChunkGroupIndex + 1}{(selectedDocument.document_contents[selectedChunkGroupIndex]?.length || 0) > 1 ? `.${selectedChunkIndex + 1}` : ''}
+                      Selected Chunk: {selectedChunkIndex + 1}
                     </div>
                     <div className="chunk-text">
                       {getSelectedChunkText() || 'No content available'}
