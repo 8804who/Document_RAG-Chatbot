@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getDocuments } from '../services';
+import { getDocuments, deleteDocument } from '../services';
 import '../styles/DocumentsPage.css';
 
 interface DocumentItem {
   document_name: string;
-  document_contents: string;
+  document_contents: string[][];
+  document_id: string;
 }
 
 const DocumentsPage: React.FC = () => {
@@ -13,6 +14,7 @@ const DocumentsPage: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedChunkIndex, setSelectedChunkIndex] = useState<number>(0);
 
   useEffect(() => {
     fetchDocuments();
@@ -24,12 +26,26 @@ const DocumentsPage: React.FC = () => {
       setError('');
       const response = await getDocuments();
       // Expecting backend to return a list like: [{ document_name, document_contents }]
-      const list: DocumentItem[] = Array.isArray(response) ? response : (response?.documents || []);
+      const rawList: any[] = Array.isArray(response) ? response : (response?.documents || []);
+      const list: DocumentItem[] = rawList.map((item: any) => {
+        const contents = item?.document_contents ?? [];
+        const normalizedContents = Array.isArray(contents) && contents.length > 0 && Array.isArray(contents[0])
+          ? contents
+          : [Array.isArray(contents) ? contents : []];
+        return {
+          document_name: item.document_name,
+          document_contents: normalizedContents,
+          document_id: item.document_id,
+        } as DocumentItem;
+      });
       setDocuments(list);
       if (list.length > 0) {
         setSelectedDocument(list[0]);
+        // reset chunk selection
+        setSelectedChunkIndex(0);
       } else {
         setSelectedDocument(null);
+        setSelectedChunkIndex(0);
       }
     } catch (err) {
       setError('Failed to fetch documents. Please try again.');
@@ -39,8 +55,24 @@ const DocumentsPage: React.FC = () => {
     }
   };
 
+  const handleDelete = async (doc: DocumentItem) => {
+    try {
+      setError('');
+      await deleteDocument(doc.document_id);
+      if (selectedDocument?.document_id === doc.document_id) {
+        setSelectedDocument(null);
+      }
+      await fetchDocuments();
+    } catch (err) {
+      setError('Failed to delete document. Please try again.');
+      console.error('Error deleting document:', err);
+    }
+  };
+
   const handleDocumentClick = (document: DocumentItem) => {
     setSelectedDocument(document);
+    // reset chunk selection on new doc
+    setSelectedChunkIndex(0);
   };
 
   const filteredDocuments = documents.filter(doc =>
@@ -48,6 +80,14 @@ const DocumentsPage: React.FC = () => {
   );
 
   const clearError = () => setError('');
+
+  const getSelectedChunkText = () => {
+    if (!selectedDocument || !Array.isArray(selectedDocument.document_contents)) return '';
+    const flatChunks = selectedDocument.document_contents.flat();
+    if (flatChunks.length === 0) return '';
+    const safeIndex = Math.min(Math.max(selectedChunkIndex, 0), flatChunks.length - 1);
+    return flatChunks[safeIndex] || '';
+  };
 
   if (loading) {
     return (
@@ -119,7 +159,20 @@ const DocumentsPage: React.FC = () => {
                     <h3 className="document-filename" title={doc.document_name}>
                       {doc.document_name}
                     </h3>
+                    <div className="document-meta">
+                      <span>{Array.isArray(doc.document_contents) ? doc.document_contents.length : 0} chunks</span>
+                    </div>
                   </div>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(doc);
+                    }}
+                    title="Delete document"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
@@ -143,9 +196,37 @@ const DocumentsPage: React.FC = () => {
               </button>
             </div>
             <div className="content-body">
-              <div className="document-text">
-                {selectedDocument.document_contents || 'No content available'}
-              </div>
+              {Array.isArray(selectedDocument.document_contents) && selectedDocument.document_contents.flat().length > 0 ? (
+                <div className="chunks-view">
+                  <div className="chunks-sidebar">
+                    <div className="chunk-list">
+                      {selectedDocument.document_contents.flat().map((_, idx) => {
+                        const active = idx === selectedChunkIndex;
+                        return (
+                          <button
+                            key={`chunk-${idx}`}
+                            className={`chunk-list-item ${active ? 'active' : ''}`}
+                            onClick={() => setSelectedChunkIndex(idx)}
+                            title={`Chunk ${idx + 1}`}
+                          >
+                            Chunk {idx + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="chunk-content">
+                    <div className="chunk-header">
+                      Selected Chunk: {selectedChunkIndex + 1}
+                    </div>
+                    <div className="chunk-text">
+                      {getSelectedChunkText() || 'No content available'}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="document-text">No content available</div>
+              )}
             </div>
           </div>
         )}

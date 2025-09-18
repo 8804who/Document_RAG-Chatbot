@@ -2,7 +2,7 @@ from authlib.integrations.starlette_client import OAuth
 from core import config
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from util.auth import (
     save_google_oauth_token,
     get_google_oauth_token,
@@ -79,7 +79,7 @@ async def auth(request: Request):
 @auth_router.post("/verify")
 async def verify_token_endpoint(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> dict:
+) -> JSONResponse:
     """
     구글 Token 검증 엔드포인트
 
@@ -93,17 +93,17 @@ async def verify_token_endpoint(
 
     try:
         verification_result = await verify_google_token(token)
-        return verification_result
+        return JSONResponse(content=verification_result, status_code=200)
     except HTTPException:
         try:
             verification_result = await verify_google_id_token(token)
-            return verification_result
+            return JSONResponse(content=verification_result, status_code=200)
         except HTTPException:
             raise HTTPException(status_code=401, detail="Invalid token")
 
 
 @auth_router.post("/refresh")
-async def refresh_token(request: Request) -> dict:
+async def refresh_token(request: Request) -> JSONResponse:
     """
     구글 Access Token 갱신
 
@@ -133,11 +133,14 @@ async def refresh_token(request: Request) -> dict:
 
         if response.status_code == 200:
             token_data = response.json()
-            return {
-                "access_token": token_data["access_token"],
-                "expires_in": token_data.get("expires_in", 3600),
-                "token_type": "Bearer",
-            }
+            return JSONResponse(
+                content={
+                    "access_token": token_data["access_token"],
+                    "expires_in": token_data.get("expires_in", 3600),
+                    "token_type": "Bearer",
+                },
+                status_code=200,
+            )
         else:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
@@ -164,9 +167,13 @@ async def logout(request: Request):
             )
 
         if response.status_code == 200:
-            return {"message": "Token revoked successfully"}
+            return JSONResponse(
+                content={"message": "Token revoked successfully"}, status_code=200
+            )
         else:
-            return {"message": "Token revocation failed"}
+            return JSONResponse(
+                content={"message": "Token revocation failed"}, status_code=400
+            )
 
     except Exception as e:
         logging.error(f"Token revocation failed: {e}")
