@@ -4,6 +4,7 @@ from langchain_core.documents import Document
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from fastapi import HTTPException
 
 OPENAI_EMBEDDING_MODEL = config.OPENAI_EMBEDDING_MODEL
 CHUNK_SIZE = config.CHUNK_SIZE
@@ -31,10 +32,13 @@ def save_user_document_to_file(
         document_id (str): 문서 ID
         document_content (str): 문서 내용
     """
-    file_path = f"documents/{user_id}/{document_id}.txt"
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(document_content)
+    try:
+        file_path = f"documents/{user_id}/{document_id}.txt"
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(document_content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def read_user_document_from_file(user_id: str, document_id: str) -> str:
@@ -63,12 +67,15 @@ def get_user_documents_from_vector_store(user_id: str) -> list[str]:
     Returns:
         list[dict]: 문서 메타데이터 리스트
     """
-    documents = vector_store._collection.get(
-        where={"user_id": user_id}, include=["metadatas", "documents"]
-    )
+    try:
+        documents = vector_store._collection.get(
+            where={"user_id": user_id}, include=["metadatas", "documents"]
+        )
 
-    parsed_document_metadatas = parse_document_metadata(documents)
-    return parsed_document_metadatas
+        parsed_document_metadatas = parse_document_metadata(documents)
+        return parsed_document_metadatas
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def parse_document_metadata(document_metadatas: list[dict]) -> list[dict]:
@@ -114,7 +121,11 @@ def delete_document_from_vector_store(document_id: str) -> None:
     Args:
         document_id (str): 문서 ID
     """
-    vector_store.delete(where={"document_id": document_id})
+    try:
+        vector_store.delete(where={"document_id": document_id})
+        vector_store.persist()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def insert_document_to_vector_store(
@@ -128,20 +139,23 @@ def insert_document_to_vector_store(
         document_id (str): 문서 ID
         document_name (str): 문서 이름
     """
-    documents = []
-    document_content = read_user_document_from_file(user_id, document_id)
-    for chunk in chunk_document(document_content):
-        documents.append(
-            Document(
-                page_content=chunk,
-                metadata={
-                    "user_id": user_id,
-                    "document_id": document_id,
-                    "document_name": document_name,
-                },
+    try:
+        documents = []
+        document_content = read_user_document_from_file(user_id, document_id)
+        for chunk in chunk_document(document_content):
+            documents.append(
+                Document(
+                    page_content=chunk,
+                    metadata={
+                        "user_id": user_id,
+                        "document_id": document_id,
+                        "document_name": document_name,
+                    },
+                )
             )
-        )
-    vector_store.add_documents(documents)
+        vector_store.add_documents(documents)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def chunk_document(document_content: str) -> list[str]:
