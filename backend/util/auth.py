@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 import httpx
-import logging
+from util.logger import logger
 
 GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = config.GOOGLE_CLIENT_SECRET
@@ -82,7 +82,7 @@ async def verify_google_token(token: str) -> dict:
             raise HTTPException(status_code=401, detail="Invalid token")
 
     except httpx.RequestException as e:
-        logging.error(f"Token verification failed: {e}")
+        logger.error(f"Token verification failed: {e}")
         raise HTTPException(status_code=401, detail="Token verification failed")
 
 
@@ -112,5 +112,5 @@ async def verify_google_id_token(id_token_str: str) -> dict:
         }
 
     except Exception as e:
-        logging.error(f"ID token verification failed: {e}")
+        logger.error(f"ID token verification failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid ID token")

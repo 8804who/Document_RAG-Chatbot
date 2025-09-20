@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from api.v1.endpoints.auth import verify_google_token, verify_google_id_token
-import logging
+from util.logger import logger
 
 security = HTTPBearer()
 
@@ -39,7 +39,7 @@ async def get_current_user(
                 )
 
     except Exception as e:
-        logging.error(f"Authentication failed: {e}")
+        logger.error(f"Authentication failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",
