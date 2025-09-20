@@ -2,6 +2,7 @@ from models.chat_log import ChatLog
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from util.logger import logger
 
 
 async def save_chat_log(db: AsyncSession, email: str, query: str, answer: str) -> None:
@@ -23,4 +24,5 @@ async def save_chat_log(db: AsyncSession, email: str, query: str, answer: str) -
         await db.commit()
     except Exception as e:
         await db.rollback()
+        logger.error(f"Error saving chat log: {e}")
         raise e

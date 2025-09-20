@@ -7,6 +7,7 @@ from util.document import (
     get_user_documents_from_vector_store,
     delete_document_from_vector_store,
 )
+from util.logger import logger
 import uuid
 
 documents_router = APIRouter()
@@ -17,6 +18,7 @@ async def upload_user_document(
     current_user: dict = Depends(get_current_user),
     document: UploadFile = File(...),
 ) -> JSONResponse:
+    logger.info(f"Uploading user document: {document.filename}")
     user_id = current_user.get("sub")
     document_id = str(uuid.uuid4())
     document_content = document.file.read().decode("utf-8")
@@ -31,6 +33,7 @@ async def upload_user_document(
 async def get_user_documents(
     current_user: dict = Depends(get_current_user),
 ) -> JSONResponse:
+    logger.info(f"Getting user documents")
     user_id = current_user.get("sub")
     documents = get_user_documents_from_vector_store(user_id)
     return JSONResponse(content={"documents": documents}, status_code=200)
@@ -41,6 +44,7 @@ async def delete_user_document(
     current_user: dict = Depends(get_current_user),
     document_id: str = Path(...),
 ) -> JSONResponse:
+    logger.info(f"Deleting user document: {document_id}")
     delete_document_from_vector_store(document_id)
     return JSONResponse(
         content={"message": "Document deleted successfully"}, status_code=200

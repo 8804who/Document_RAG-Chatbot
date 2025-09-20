@@ -10,8 +10,8 @@ from util.auth import (
     verify_google_id_token,
 )
 import json
-import logging
 import httpx
+from util.logger import logger
 
 auth_router = APIRouter()
 security = HTTPBearer()
@@ -145,7 +145,7 @@ async def refresh_token(request: Request) -> JSONResponse:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     except Exception as e:
-        logging.error(f"Token refresh failed: {e}")
+        logger.error(f"Token refresh failed: {e}")
         raise HTTPException(status_code=400, detail="Token refresh failed")
 
 
@@ -176,5 +176,5 @@ async def logout(request: Request):
             )
 
     except Exception as e:
-        logging.error(f"Token revocation failed: {e}")
+        logger.error(f"Token revocation failed: {e}")
         raise HTTPException(status_code=400, detail="Token revocation failed")

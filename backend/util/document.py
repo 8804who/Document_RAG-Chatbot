@@ -5,6 +5,7 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from fastapi import HTTPException
+from util.logger import logger
 
 OPENAI_EMBEDDING_MODEL = config.OPENAI_EMBEDDING_MODEL
 CHUNK_SIZE = config.CHUNK_SIZE
