@@ -3,6 +3,7 @@ from sqlalchemy import insert, select
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from typing import Optional
+from util.logger import logger
 
 
 def save_session_id(db: Session, email: str, session_id: str) -> None:
@@ -26,6 +27,7 @@ def save_session_id(db: Session, email: str, session_id: str) -> None:
         db.commit()
     except Exception as e:
         db.rollback()
+        logger.error(f"Error saving session id: {e}")
         raise e
 
 
@@ -44,4 +46,5 @@ def get_session_id(db: Session, email: str) -> Optional[SessionId]:
         stmt = select(SessionId).where(SessionId.email == email)
         return db.execute(stmt).scalar_one_or_none()
     except Exception as e:
+        logger.error(f"Error getting session id: {e}")
         raise e

@@ -4,7 +4,7 @@ from services.chat_service import get_answer
 from util.chatbot import save_chat_log
 from util.session_id import session_id_management
 from util.dependencies import get_current_user
-import logging
+from util.logger import logger
 
 chatbot_router = APIRouter()
 
@@ -45,21 +45,21 @@ async def chat(
         HTTPException: 챗봇 응답 중 오류가 발생한 경우 500 에러 반환
     """
     try:
-        logging.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
+        logger.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
 
         session_id = session_id_management(current_user.get("email", "unknown"))
         response = await get_answer(user_query=request.message, session_id=session_id)
         answer = response.content
-        logging.info(f"Chat answer: {answer}")
-        
+        logger.info(f"Chat answer: {answer}")
+
         # 개별 채팅 로그 저장
         await save_chat_log(
             email=current_user.get("email", "unknown"),
             query=request.message,
             answer=answer,
         )
-        
+
         return {"message": answer}
     except Exception as e:
-        logging.error(f"Error in chat: {e}")
+        logger.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))

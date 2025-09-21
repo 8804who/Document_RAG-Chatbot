@@ -6,6 +6,7 @@ from api.v1.router import api_router
 import uvicorn
 from contextlib import asynccontextmanager
 from util.chat_history import init_chat_history, close_chat_history
+from util.logger import setup_logger, logger
 
 
 @asynccontextmanager
@@ -17,11 +18,12 @@ async def lifespan(app: FastAPI):
         app (FastAPI): FastAPI 애플리케이션
     """
     try:
-        print("Server is starting...")
+        setup_logger()
+        logger.info("Server is starting...")
         await init_chat_history()
         yield
     finally:
-        print("Server is stopping...")
+        logger.info("Server is stopping...")
         await close_chat_history()
 
 
@@ -46,7 +48,6 @@ app.include_router(api_router, prefix="/api")
 @app.get("/health")
 def health_check():
     return {"message": "서버가 정상 실행중입니다."}
-
 
 
 if __name__ == "__main__":
