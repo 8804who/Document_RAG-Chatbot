@@ -1,0 +1,10 @@
+from langsmith import Client
+from core import config
+
+
+LANGSMITH_API_KEY = config.LANGSMITH_API_KEY
+LANGSMITH_ENDPOINT = config.LANGSMITH_ENDPOINT
+LANGSMITH_PROJECT = config.LANGSMITH_PROJECT
+LANGSMITH_TRACING = config.LANGSMITH_TRACING
+
+client = Client(api_key=LANGSMITH_API_KEY)
