@@ -1,6 +1,5 @@
 from langchain.smith import RunEvalConfig, run_on_dataset
-from core import config
-from evaluate.langsmith import client
+from evaluate.langsmith_setting import client
 
 
 def retrieve_metrics(run, example):
