@@ -3,6 +3,16 @@ from evaluate.langsmith_setting import client
 
 
 def retrieve_metrics(run, example):
+    """
+    리트리버 성능 측정 지표
+
+    Args:
+        run: 리트리버 실행 결과
+        example: 예제 데이터
+
+    Returns:
+        dict: 리트리버 성능 측정 결과
+    """
     retrieved_docs = run.outputs.get("source_documents", [])
     retrieved_ids = [doc.metadata.get("doc_id") for doc in retrieved_docs]
 
@@ -22,6 +32,16 @@ def retrieve_metrics(run, example):
 
 
 def evaluate_retriever(model, dataset_name):
+    """
+    리트리버 성능 측정
+
+    Args:
+        model: 모델
+        dataset_name: 데이터셋
+
+    Returns:
+        dict: 리트리버 성능 측정 결과
+    """
     eval_config = RunEvalConfig(
         evaluators=[retrieve_metrics],
     )
