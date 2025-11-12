@@ -1,3 +1,4 @@
+from app import background_tasks
 from fastapi import APIRouter, HTTPException, Depends
 from schemas.chat import ChatRequest
 from services.chat_service import get_answer
@@ -53,7 +54,8 @@ async def chat(
         logger.info(f"Chat answer: {answer}")
 
         # 개별 채팅 로그 저장
-        await save_chat_log(
+        background_tasks.add_task(
+            save_chat_log,
             email=current_user.get("email", "unknown"),
             query=request.message,
             answer=answer,

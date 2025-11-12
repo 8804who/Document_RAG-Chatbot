@@ -1,5 +1,5 @@
 from core import config
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from api.v1.router import api_router
@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+background_tasks = BackgroundTasks()
 
 app.add_middleware(
     CORSMiddleware,
