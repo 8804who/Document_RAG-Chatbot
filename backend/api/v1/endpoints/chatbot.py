@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from schemas.chat import ChatRequest
 from services.chat_service import get_answer
 from util.chatbot import save_chat_log
@@ -29,7 +29,9 @@ async def health_check(current_user: dict = Depends(get_current_user)) -> dict:
 
 @chatbot_router.post("/chat")
 async def chat(
-    request: ChatRequest, current_user: dict = Depends(get_current_user)
+    request: ChatRequest,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user),
 ) -> dict:
     """
     챗봇에게 유저 메시지를 전달하고 챗봇의 응답을 반환
@@ -53,7 +55,8 @@ async def chat(
         logger.info(f"Chat answer: {answer}")
 
         # 개별 채팅 로그 저장
-        await save_chat_log(
+        background_tasks.add_task(
+            save_chat_log,
             email=current_user.get("email", "unknown"),
             query=request.message,
             answer=answer,
