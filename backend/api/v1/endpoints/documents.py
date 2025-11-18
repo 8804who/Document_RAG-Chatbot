@@ -1,5 +1,8 @@
+import uuid
+
 from fastapi import APIRouter, Depends, File, UploadFile, Path
 from fastapi.responses import JSONResponse
+
 from util.dependencies import get_current_user
 from util.document import (
     save_user_document_to_file,
@@ -8,7 +11,7 @@ from util.document import (
     delete_document_from_vector_store,
 )
 from util.logger import logger
-import uuid
+
 
 documents_router = APIRouter()
 

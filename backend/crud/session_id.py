@@ -1,8 +1,9 @@
-from models.session_id import SessionId
-from sqlalchemy import insert, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from typing import Optional
+
+from models.session_id import SessionId
 from util.logger import logger
 
 

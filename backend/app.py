@@ -1,10 +1,13 @@
-from core import config
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from time import perf_counter
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from api.v1.router import api_router
 import uvicorn
-from contextlib import asynccontextmanager
+
+from api.v1.router import api_router
+from core import config
 from util.chat_history import init_chat_history, close_chat_history
 from util.logger import setup_logger, logger
 
@@ -48,6 +51,20 @@ app.include_router(api_router, prefix="/api")
 @app.get("/health")
 def health_check():
     return {"message": "서버가 정상 실행중입니다."}
+
+
+@app.middleware("http")
+async def log_processing_time(request: Request, call_next):
+    start_time = perf_counter()
+    response = await call_next(request)
+    process_time = perf_counter() - start_time
+
+    log_endpoint_list = ["/api/v1/chatbot/chat"]
+
+    if request.url.path in log_endpoint_list:
+        logger.info(f"{request.method} {request.url.path} -> {process_time:.4f}s")
+
+    return response
 
 
 if __name__ == "__main__":

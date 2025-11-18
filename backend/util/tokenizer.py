@@ -1,7 +1,8 @@
-from core import config
-
 import time
+
 import tiktoken
+
+from core import config
 
 
 class Tokenizer:
@@ -22,17 +23,17 @@ class Tokenizer:
         # Handle different input types
         if isinstance(text, str):
             text_content = text
-        elif hasattr(text, 'content'):
+        elif hasattr(text, "content"):
             text_content = text.content
-        elif hasattr(text, 'text'):
+        elif hasattr(text, "text"):
             text_content = text.text
         else:
             text_content = str(text)
-        
+
         # Ensure we have a string
         if not isinstance(text_content, str):
             text_content = str(text_content)
-            
+
         return len(self.tokenizer.encode(text_content))
 
 

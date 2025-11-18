@@ -1,10 +1,11 @@
-from core import config
-from crud import auth as auth_crud
-from db.database import get_async_db_session
 from fastapi import HTTPException
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 import httpx
+
+from core import config
+from crud import auth as auth_crud
+from db.database import get_async_db_session
 from util.logger import logger
 
 GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID
