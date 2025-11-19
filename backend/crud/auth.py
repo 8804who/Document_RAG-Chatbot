@@ -1,8 +1,8 @@
-from models.auth import GoogleOauth
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.auth import GoogleOauth
 from util.logger import logger
 
 

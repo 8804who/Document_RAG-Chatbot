@@ -1,24 +1,28 @@
-from core import config
+from operator import itemgetter
+import logging
+import textwrap
+
 from fastapi import HTTPException
-from langchain_core.messages import trim_messages
+from langchain_core.messages import trim_messages, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
-from operator import itemgetter
-from util.chat_history import get_chat_history
 from pydantic import SecretStr
-from util.tokenizer import OpenAiTokenizer
+
+from core import config
+from util.chat_history import get_chat_history
 from util.document import vector_store
-import logging
-import textwrap
-from langchain_core.messages import BaseMessage
+from util.tokenizer import OpenAiTokenizer
 
 
 OPENAI_API_KEY = config.OPENAI_API_KEY
 OPENAI_MODEL = config.OPENAI_MODEL
 
-trimmer = trim_messages(strategy="last", max_tokens=2000, token_counter=OpenAiTokenizer().count_tokens)
+trimmer = trim_messages(
+    strategy="last", max_tokens=2000, token_counter=OpenAiTokenizer().count_tokens
+)
+
 
 def get_chat_model() -> ChatOpenAI:
     """
@@ -49,7 +53,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
                 (
                     "system",
                     textwrap.dedent(
-                    """
+                        """
                     # Natural Conversation Framework
                     You are a conversational AI focused on engaging in authentic dialogue. Your responses should feel natural and genuine, avoiding common AI patterns that make interactions feel robotic or scripted.
                     ## Core Approach
@@ -104,10 +108,12 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
 
         chain = prompt | model
 
-        chain_with_trimmer = RunnablePassthrough.assign(
-            chat_history=itemgetter("chat_history") | trimmer
-        ) | chain
-
+        chain_with_trimmer = (
+            RunnablePassthrough.assign(
+                chat_history=itemgetter("chat_history") | trimmer
+            )
+            | chain
+        )
 
         chain_with_history = RunnableWithMessageHistory(
             chain_with_trimmer,
@@ -120,7 +126,7 @@ async def get_answer(user_query: str, session_id: str) -> BaseMessage:
             {"context": context, "user_query": user_query},
             config={"configurable": {"session_id": session_id}},
         )
-        
+
         return result
     except Exception as e:
         logging.error(f"Error in chat_service: {e}")

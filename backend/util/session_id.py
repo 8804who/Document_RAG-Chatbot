@@ -1,6 +1,7 @@
+import uuid
+
 from crud import session_id as session_id_crud
 from db.database import get_db_session
-import uuid
 
 
 def session_id_management(email: str) -> str:
@@ -40,7 +41,7 @@ def get_session_id(email: str) -> str:
     Args:
         db: Database session
         email: The email of the user.
-    
+
     Returns:
         str: The session ID.
     """

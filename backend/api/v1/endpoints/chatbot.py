@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from schemas.chat import ChatRequest
+
 from services.chat_service import get_answer
+from schemas.chat import ChatRequest
 from util.chatbot import save_chat_log
 from util.session_id import session_id_management
 from util.dependencies import get_current_user

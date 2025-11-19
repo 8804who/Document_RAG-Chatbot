@@ -1,16 +1,18 @@
+import json
+import httpx
+
 from authlib.integrations.starlette_client import OAuth
-from core import config
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import HTMLResponse, JSONResponse
+
+from core import config
 from util.auth import (
     save_google_oauth_token,
     get_google_oauth_token,
     verify_google_token,
     verify_google_id_token,
 )
-import json
-import httpx
 from util.logger import logger
 
 auth_router = APIRouter()

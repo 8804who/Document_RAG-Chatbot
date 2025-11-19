@@ -1,9 +1,11 @@
-from core import config
+from contextlib import contextmanager, asynccontextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from contextlib import contextmanager, asynccontextmanager
+
+from core import config
 
 Base = declarative_base()
 
@@ -13,7 +15,9 @@ ASYNC_DB_URL = f"postgresql+asyncpg://{config.DB_USER}:{config.DB_PASSWORD}@{con
 engine = create_engine(DB_URL)
 async_engine = create_async_engine(ASYNC_DB_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=async_engine)
+AsyncSessionLocal = async_sessionmaker(
+    autocommit=False, autoflush=False, bind=async_engine
+)
 
 
 @contextmanager

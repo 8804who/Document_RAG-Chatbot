@@ -1,7 +1,7 @@
-from models.chat_log import ChatLog
 from sqlalchemy import insert
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.chat_log import ChatLog
 from util.logger import logger
 
 

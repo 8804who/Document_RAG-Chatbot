@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from api.v1.endpoints.auth import verify_google_token, verify_google_id_token
 from util.logger import logger
 

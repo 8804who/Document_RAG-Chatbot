@@ -1,7 +1,8 @@
-import logging
-from logging.handlers import TimedRotatingFileHandler
-import os
 from datetime import datetime
+from logging.handlers import TimedRotatingFileHandler
+import logging
+import os
+
 
 logger = logging.getLogger(__name__)
 
