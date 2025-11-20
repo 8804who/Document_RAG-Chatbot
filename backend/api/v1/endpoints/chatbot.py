@@ -50,7 +50,7 @@ async def chat(
     try:
         logger.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
 
-        session_id = session_id_management(current_user.get("email", "unknown"))
+        session_id = await session_id_management(current_user.get("email", "unknown"))
         response = await get_answer(user_query=request.message, session_id=session_id)
         answer = response.content
         logger.info(f"Chat answer: {answer}")
