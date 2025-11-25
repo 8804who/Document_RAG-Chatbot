@@ -62,10 +62,10 @@ async def auth(request: Request):
         <script>
           window.opener.postMessage(
             JSON.stringify({{
-              access_token: "{token['access_token']}",
-              id_token: "{token['id_token']}",
+              access_token: "{token["access_token"]}",
+              id_token: "{token["id_token"]}",
               userinfo: {userinfo_str},
-              verified: {str(token_verification['valid']).lower()}
+              verified: {str(token_verification["valid"]).lower()}
             }}), 
             "http://localhost:10002"
           );

@@ -7,7 +7,6 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core import config
-from app.util.logger import logger
 
 OPENAI_EMBEDDING_MODEL = config.OPENAI_EMBEDDING_MODEL
 CHUNK_SIZE = config.CHUNK_SIZE
@@ -36,7 +35,7 @@ def save_user_document_to_file(
         document_content (str): 문서 내용
     """
     try:
-        file_path = f"documents/{user_id}/{document_id}.txt"
+        file_path = f"{CHROMA_DB_PATH}/{user_id}/{document_id}.txt"
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(document_content)
@@ -55,7 +54,7 @@ def read_user_document_from_file(user_id: str, document_id: str) -> str:
     Returns:
         str: 파일의 content
     """
-    file_path = f"documents/{user_id}/{document_id}.txt"
+    file_path = f"{CHROMA_DB_PATH}/{user_id}/{document_id}.txt"
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 

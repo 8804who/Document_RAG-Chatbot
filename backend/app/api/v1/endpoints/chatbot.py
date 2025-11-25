@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 
 from app.services.chat_service import get_answer
-from app.schemas.chat import ChatRequest
+from app.schemas.chat import ChatRequest, ChatResponse
 from app.util.chatbot import save_chat_log
 from app.util.session_id import session_id_management
 from app.util.dependencies import get_current_user
@@ -10,30 +10,12 @@ from app.util.logger import logger
 chatbot_router = APIRouter()
 
 
-@chatbot_router.get("/health")
-async def health_check(current_user: dict = Depends(get_current_user)) -> dict:
-    """
-    인증이 필요한 상태 확인 엔드포인트
-
-    Args:
-        current_user (dict): 인증된 사용자 정보
-
-    Returns:
-        dict: 상태 확인 결과와 인증된 사용자 정보
-    """
-    return {
-        "status": "healthy",
-        "authenticated_user": current_user.get("email", "unknown"),
-        "message": "Chatbot service is running",
-    }
-
-
 @chatbot_router.post("/chat")
 async def chat(
     request: ChatRequest,
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
-) -> dict:
+) -> ChatResponse:
     """
     챗봇에게 유저 메시지를 전달하고 챗봇의 응답을 반환
 
@@ -42,7 +24,7 @@ async def chat(
         current_user (dict): 인증된 사용자 정보
 
     Returns:
-        dict: 챗봇의 응답
+        ChatResponse: 챗봇의 응답
 
     Raises:
         HTTPException: 챗봇 응답 중 오류가 발생한 경우 500 에러 반환
@@ -63,7 +45,7 @@ async def chat(
             answer=answer,
         )
 
-        return {"message": answer}
+        return ChatResponse(answer=answer)
     except Exception as e:
         logger.error(f"Error in chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,5 +1,3 @@
-import sys
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -13,9 +11,11 @@ from app.main import app
 async def client():
     """Create a test client for the FastAPI app"""
     # Mock the lifespan dependencies to avoid initialization errors
-    with patch("app.util.chat_history.init_chat_history"), patch(
-        "app.util.chat_history.close_chat_history"
-    ), patch("app.util.logger.setup_logger"):
+    with (
+        patch("app.util.chat_history.init_chat_history"),
+        patch("app.util.chat_history.close_chat_history"),
+        patch("app.util.logger.setup_logger"),
+    ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:

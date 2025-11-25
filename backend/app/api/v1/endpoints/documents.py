@@ -36,7 +36,7 @@ async def upload_user_document(
 async def get_user_documents(
     current_user: dict = Depends(get_current_user),
 ) -> JSONResponse:
-    logger.info(f"Getting user documents")
+    logger.info("Getting user documents")
     user_id = current_user.get("sub")
     documents = get_user_documents_from_vector_store(user_id)
     return JSONResponse(content={"documents": documents}, status_code=200)
