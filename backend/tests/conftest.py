@@ -1,15 +1,9 @@
-import sys
-from pathlib import Path
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from httpx import AsyncClient, ASGITransport
 
-# Add the backend directory (parent of tests) to the Python path
-backend_dir = Path(__file__).parent.parent
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
-
-from app import app
+from app.main import app
 
 
 # Shared test fixtures
@@ -17,9 +11,11 @@ from app import app
 async def client():
     """Create a test client for the FastAPI app"""
     # Mock the lifespan dependencies to avoid initialization errors
-    with patch("util.chat_history.init_chat_history"), patch(
-        "util.chat_history.close_chat_history"
-    ), patch("util.logger.setup_logger"):
+    with (
+        patch("app.util.chat_history.init_chat_history"),
+        patch("app.util.chat_history.close_chat_history"),
+        patch("app.util.logger.setup_logger"),
+    ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
@@ -35,3 +31,18 @@ def mock_user():
         "picture": "https://example.com/picture.jpg",
         "sub": "1234567890",
     }
+
+
+async def authenticated_client(client, mock_user):
+    """Create an authenticated test client"""
+    from app.main import app
+    from app.util.dependencies import get_current_user
+
+    async def override_get_current_user():
+        return mock_user
+
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    try:
+        yield client
+    finally:
+        app.dependency_overrides.clear()

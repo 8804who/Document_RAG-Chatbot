@@ -47,7 +47,7 @@ const ChatPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await chat(input);
-      setMessages(msgs => [...msgs, { sender: 'bot', text: data.message } as Message]);
+      setMessages(msgs => [...msgs, { sender: 'bot', text: data.answer } as Message]);
     } catch {
       setMessages(msgs => [...msgs, { sender: 'bot', text: 'Error: Could not get response.' } as Message]);
     } finally {

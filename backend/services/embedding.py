@@ -1,6 +1,0 @@
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain_community.chat_models import ChatOpenAI
-from langchain_community.chains import RetrievalQA
-from langchain_community.retrievers import BM25Retriever

@@ -28,9 +28,10 @@ async def test_auth_verify_token_success(client):
 @pytest.mark.asyncio
 async def test_auth_verify_token_invalid(client):
     """Test token verification endpoint with invalid token"""
-    with patch("api.v1.endpoints.auth.verify_google_token") as mock_verify, patch(
-        "api.v1.endpoints.auth.verify_google_id_token"
-    ) as mock_verify_id:
+    with (
+        patch("api.v1.endpoints.auth.verify_google_token") as mock_verify,
+        patch("api.v1.endpoints.auth.verify_google_id_token") as mock_verify_id,
+    ):
         mock_verify.side_effect = Exception("Invalid token")
         mock_verify_id.side_effect = Exception("Invalid token")
 
@@ -51,9 +52,10 @@ async def test_auth_verify_token_missing(client):
 @pytest.mark.asyncio
 async def test_auth_refresh_token_success(client):
     """Test token refresh endpoint with valid refresh token"""
-    with patch("api.v1.endpoints.auth.get_google_oauth_token") as mock_get_token, patch(
-        "api.v1.endpoints.auth.httpx.AsyncClient"
-    ) as mock_client_class:
+    with (
+        patch("api.v1.endpoints.auth.get_google_oauth_token") as mock_get_token,
+        patch("api.v1.endpoints.auth.httpx.AsyncClient") as mock_client_class,
+    ):
         mock_get_token.return_value = "valid_refresh_token"
 
         mock_response = MagicMock()
