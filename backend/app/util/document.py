@@ -6,13 +6,13 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from app.core import config
+from app.core.config import Settings
 
-OPENAI_EMBEDDING_MODEL = config.OPENAI_EMBEDDING_MODEL
-CHUNK_SIZE = config.CHUNK_SIZE
-CHUNK_OVERLAP = config.CHUNK_OVERLAP
-CHROMA_DB_PATH = config.CHROMA_DB_PATH
-COLLECTION_NAME = config.COLLECTION_NAME
+OPENAI_EMBEDDING_MODEL = Settings.OPENAI_EMBEDDING_MODEL
+CHUNK_SIZE = Settings.CHUNK_SIZE
+CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
+CHROMA_DB_PATH = Settings.CHROMA_DB_PATH
+COLLECTION_NAME = Settings.COLLECTION_NAME
 
 embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
 

@@ -1,9 +1,9 @@
 from langchain_postgres import PostgresChatMessageHistory
 import psycopg
 
-from app.core import config
+from app.core.config import Settings
 
-db_connection_string = f"postgresql://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
+db_connection_string = f"postgresql://{Settings.DB_USER}:{Settings.DB_PASSWORD}@{Settings.DB_HOST}:{Settings.DB_PORT}/{Settings.DB_NAME}"
 
 table_name = "chat_history"
 _async_connection: psycopg.AsyncConnection | None = None
