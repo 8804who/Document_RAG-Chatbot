@@ -1,7 +1,7 @@
 
 import tiktoken
 
-from app.core import config
+from app.core.config import settings
 
 
 class Tokenizer:
@@ -38,19 +38,19 @@ class Tokenizer:
 
 class OpenAiTokenizer(Tokenizer):
     def __init__(self):
-        super().__init__(config.OPENAI_MODEL)
+        super().__init__(settings.OPENAI_MODEL)
 
 
 class AnthropicTokenizer(Tokenizer):
     def __init__(self):
-        super().__init__(config.ANTHROPIC_MODEL)
+        super().__init__(settings.ANTHROPIC_MODEL)
 
 
 class GoogleVertexAiTokenizer(Tokenizer):
     def __init__(self):
-        super().__init__(config.GOOGLE_MODEL)
+        super().__init__(settings.GOOGLE_MODEL)
 
 
 class HuggingFaceTokenizer(Tokenizer):
     def __init__(self):
-        super().__init__(config.HUGGING_FACE_TOKENIZER)
+        super().__init__(settings.HUGGING_FACE_TOKENIZER)

@@ -33,6 +33,7 @@ def mock_user():
     }
 
 
+@pytest.fixture
 async def authenticated_client(client, mock_user):
     """Create an authenticated test client"""
     from app.main import app

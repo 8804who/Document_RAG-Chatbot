@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from app.core import config
+from app.core.config import settings
 from app.util.auth import (
     save_google_oauth_token,
     get_google_oauth_token,
@@ -18,9 +18,9 @@ from app.util.logger import logger
 auth_router = APIRouter()
 security = HTTPBearer()
 
-BASE_URL = config.BASE_URL
-GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET = config.GOOGLE_CLIENT_SECRET
+BASE_URL = settings.BASE_URL
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 
 oauth = OAuth()
 oauth.register(

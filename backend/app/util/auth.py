@@ -3,13 +3,13 @@ from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 import httpx
 
-from app.core import config
+from app.core.config import settings
 from app.crud import auth as auth_crud
 from app.db.database import get_async_db_session
 from app.util.logger import logger
 
-GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET = config.GOOGLE_CLIENT_SECRET
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 
 
 async def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
