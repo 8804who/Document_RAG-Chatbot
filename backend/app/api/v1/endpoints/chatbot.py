@@ -1,6 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 
-from app.services.chat_service import get_answer
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.util.chatbot import save_chat_log
 from app.util.session_id import session_id_management
@@ -12,7 +11,8 @@ chatbot_router = APIRouter()
 
 @chatbot_router.post("/chat")
 async def chat(
-    request: ChatRequest,
+    request: Request,
+    chat_request: ChatRequest,
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
 ) -> ChatResponse:
@@ -33,7 +33,7 @@ async def chat(
         logger.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
 
         session_id = await session_id_management(current_user.get("email", "unknown"))
-        response = await get_answer(user_query=request.message, session_id=session_id)
+        response = await request.app.state.chat_service.get_answer(user_query=chat_request.message, session_id=session_id)
         answer = response.content
         logger.info(f"Chat answer: {answer}")
 
@@ -41,7 +41,7 @@ async def chat(
         background_tasks.add_task(
             save_chat_log,
             email=current_user.get("email", "unknown"),
-            query=request.message,
+            query=chat_request.message,
             answer=answer,
         )
 

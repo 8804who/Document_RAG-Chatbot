@@ -1,11 +1,11 @@
-from app.core.config import Settings
+from app.core.config import settings
 from app.crud import chat_log as chat_log_crud
 from app.db.database import get_async_db_session
 
-LANGSMITH_TRACING = Settings.LANGSMITH_TRACING
-LANGSMITH_ENDPOINT = Settings.LANGSMITH_ENDPOINT
-LANGSMITH_API_KEY = Settings.LANGSMITH_API_KEY
-LANGSMITH_PROJECT = Settings.LANGSMITH_PROJECT
+LANGSMITH_TRACING = settings.LANGSMITH_TRACING
+LANGSMITH_ENDPOINT = settings.LANGSMITH_ENDPOINT
+LANGSMITH_API_KEY = settings.LANGSMITH_API_KEY
+LANGSMITH_PROJECT = settings.LANGSMITH_PROJECT
 
 
 async def save_chat_log(email: str, query: str, answer: str) -> None:

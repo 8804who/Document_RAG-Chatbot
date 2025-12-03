@@ -17,8 +17,10 @@ class Settings(BaseSettings):
     ANTHROPIC_MODEL: Optional[str] = Field(None, env="ANTHROPIC_MODEL")
     GOOGLE_API_KEY: Optional[SecretStr] = Field(None, env="GOOGLE_API_KEY")
     GOOGLE_MODEL: Optional[str] = Field(None, env="GOOGLE_MODEL")
+    GOOGLE_CLIENT_ID: Optional[str] = Field(None, env="GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET: Optional[SecretStr] = Field(None, env="GOOGLE_CLIENT_SECRET")
     HUGGING_FACE_TOKENIZER: Optional[str] = Field(None, env="HUGGING_FACE_TOKENIZER")
-    DB_HOST = os.getenv("DB_HOST")
+    DB_HOST: str = Field(..., env="DB_HOST")
     DB_PORT: int = Field(default=5432, env="DB_PORT", ge=1, le=65535)
     DB_USER: str = Field(..., env="DB_USER")
     DB_PASSWORD: SecretStr = Field(..., env="DB_PASSWORD")
@@ -35,3 +37,5 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         case_sensitive = False
         extra = "ignore"
+
+settings = Settings()
