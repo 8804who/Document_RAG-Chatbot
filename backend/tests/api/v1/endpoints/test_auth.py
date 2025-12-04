@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi import HTTPException
 
+
 @pytest.mark.asyncio
 async def test_auth_verify_token_success(client):
     """Test token verification endpoint with valid token"""
@@ -33,7 +34,9 @@ async def test_auth_verify_token_invalid(client):
         patch("app.api.v1.endpoints.auth.verify_google_id_token") as mock_verify_id,
     ):
         mock_verify.side_effect = HTTPException(status_code=401, detail="Invalid token")
-        mock_verify_id.side_effect = HTTPException(status_code=401, detail="Invalid token")
+        mock_verify_id.side_effect = HTTPException(
+            status_code=401, detail="Invalid token"
+        )
 
         response = await client.post(
             "/api/v1/auth/verify", headers={"Authorization": "Bearer invalid_token"}

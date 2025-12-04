@@ -22,7 +22,9 @@ async def test_chatbot_chat_success(authenticated_client):
         ) as mock_save_log,
     ):
         mock_session_id_management.return_value = "test_session_id"
-        mock_get_answer.return_value = BaseMessage(type="ai", content="This is a test response")
+        mock_get_answer.return_value = BaseMessage(
+            type="ai", content="This is a test response"
+        )
         mock_save_log.return_value = None
 
         response = await authenticated_client.post(

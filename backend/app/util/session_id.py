@@ -8,10 +8,10 @@ from app.util.logger import logger
 async def session_id_management(email: str) -> str:
     """
     Session ID 관리
- 
+
     Args:
         email: The email of the user.
- 
+
     Returns:
         str: The session ID.
     """
@@ -25,7 +25,7 @@ async def session_id_management(email: str) -> str:
 async def save_session_id(email: str, session_id: str) -> None:
     """
     Session ID 저장
- 
+
     Args:
         db: Database session
         email: The email of the user.
@@ -43,11 +43,11 @@ async def save_session_id(email: str, session_id: str) -> None:
 async def get_session_id(email: str) -> str | None:
     """
     Session ID 조회
- 
+
     Args:
         db: Database session
         email: The email of the user.
- 
+
     Returns:
         str | None: The session ID, or None if not found or on error.
     """
