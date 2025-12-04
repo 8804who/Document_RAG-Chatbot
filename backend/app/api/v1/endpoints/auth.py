@@ -20,7 +20,7 @@ security = HTTPBearer()
 
 BASE_URL = settings.BASE_URL
 GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET.get_secret_value()
 
 oauth = OAuth()
 oauth.register(
