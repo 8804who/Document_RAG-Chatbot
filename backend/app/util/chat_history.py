@@ -3,7 +3,7 @@ import psycopg
 
 from app.core.config import settings
 
-db_connection_string = f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+db_connection_string = f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD.get_secret_value()}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
 table_name = "chat_history"
 _async_connection: psycopg.AsyncConnection | None = None
