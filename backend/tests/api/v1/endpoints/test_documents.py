@@ -3,13 +3,14 @@ from unittest.mock import patch
 import pytest
 
 
-
 @pytest.mark.asyncio
 async def test_documents_upload_success(authenticated_client):
     """Test document upload endpoint"""
     with (
         patch("app.api.v1.endpoints.documents.save_user_document_to_file") as mock_save,
-        patch("app.api.v1.endpoints.documents.insert_document_to_vector_store") as mock_insert,
+        patch(
+            "app.api.v1.endpoints.documents.insert_document_to_vector_store"
+        ) as mock_insert,
     ):
         file_content = "This is a test document"
         files = {"document": ("test.txt", file_content, "text/plain")}
@@ -37,7 +38,9 @@ async def test_documents_upload_unauthenticated(client):
 @pytest.mark.asyncio
 async def test_documents_get_success(authenticated_client):
     """Test get user documents endpoint"""
-    with patch("app.api.v1.endpoints.documents.get_user_documents_from_vector_store") as mock_get:
+    with patch(
+        "app.api.v1.endpoints.documents.get_user_documents_from_vector_store"
+    ) as mock_get:
         mock_get.return_value = [
             {"id": "doc1", "name": "document1.txt"},
             {"id": "doc2", "name": "document2.txt"},
@@ -63,7 +66,9 @@ async def test_documents_get_unauthenticated(client):
 @pytest.mark.asyncio
 async def test_documents_delete_success(authenticated_client):
     """Test delete document endpoint"""
-    with patch("app.api.v1.endpoints.documents.delete_document_from_vector_store") as mock_delete:
+    with patch(
+        "app.api.v1.endpoints.documents.delete_document_from_vector_store"
+    ) as mock_delete:
         document_id = "test-document-id"
         response = await authenticated_client.delete(
             f"/api/v1/documents/{document_id}",

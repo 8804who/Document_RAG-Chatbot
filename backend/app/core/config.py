@@ -1,8 +1,7 @@
-import os
-
 from pydantic_settings import BaseSettings
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr
 from typing import List, Optional
+
 
 class Settings(BaseSettings):
     BASE_URL: str = Field(..., env="BASE_URL")
@@ -30,12 +29,15 @@ class Settings(BaseSettings):
     SESSION_SECRET_KEY: SecretStr = Field(..., env="SESSION_SECRET_KEY")
     CHUNK_SIZE: int = Field(default=1000, env="CHUNK_SIZE", gt=0)
     CHUNK_OVERLAP: int = Field(default=200, env="CHUNK_OVERLAP", ge=0)
-    ALLOWED_ORIGINS: List[str] = Field(default=["http://localhost:10002"], env="ALLOWED_ORIGINS")
+    ALLOWED_ORIGINS: List[str] = Field(
+        default=["http://localhost:10002"], env="ALLOWED_ORIGINS"
+    )
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
         extra = "ignore"
+
 
 settings = Settings()

@@ -15,7 +15,7 @@ CHUNK_OVERLAP = settings.CHUNK_OVERLAP
 CHROMA_DB_PATH = settings.CHROMA_DB_PATH
 COLLECTION_NAME = settings.COLLECTION_NAME
 
-embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL, api_key=OPENAI_API_KEY)
+embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL, api_key=OPENAI_API_KEY.get_secret_value())
 
 vector_store = Chroma(
     collection_name=COLLECTION_NAME,

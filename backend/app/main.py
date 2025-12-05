@@ -7,7 +7,8 @@ from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
 
 from app.api.v1.router import api_router
-from app.core import config
+from app.core.config import settings
+from app.services.chat_service import ChatService
 from app.util.chat_history import init_chat_history, close_chat_history
 from app.util.logger import setup_logger, logger
 
@@ -24,9 +25,11 @@ async def lifespan(app: FastAPI):
         setup_logger()
         logger.info("Server is starting...")
         await init_chat_history()
+        app.state.chat_service = ChatService()
         yield
     finally:
-        logger.info("Server is stopping...")
+        if logger:
+            logger.info("Server is stopping...")
         await close_chat_history()
 
 
@@ -34,7 +37,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:10002"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,7 +45,7 @@ app.add_middleware(
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=config.SESSION_SECRET_KEY,
+    secret_key=settings.SESSION_SECRET_KEY.get_secret_value(),
 )
 
 app.include_router(api_router, prefix="/api")
