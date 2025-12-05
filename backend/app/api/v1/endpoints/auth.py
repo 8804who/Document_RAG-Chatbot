@@ -20,13 +20,13 @@ security = HTTPBearer()
 
 BASE_URL = settings.BASE_URL
 GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET.get_secret_value()
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 
 oauth = OAuth()
 oauth.register(
     name="google",
     client_id=GOOGLE_CLIENT_ID,
-    client_secret=GOOGLE_CLIENT_SECRET,
+    client_secret=GOOGLE_CLIENT_SECRET.get_secret_value(),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )

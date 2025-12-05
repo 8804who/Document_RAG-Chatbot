@@ -15,7 +15,7 @@ from app.util.document import vector_store
 from app.util.tokenizer import OpenAiTokenizer
 
 
-OPENAI_API_KEY = settings.OPENAI_API_KEY.get_secret_value()
+OPENAI_API_KEY = settings.OPENAI_API_KEY
 OPENAI_MODEL = settings.OPENAI_MODEL
 
 trimmer = trim_messages(
@@ -27,11 +27,11 @@ class ChatService:
     def __init__(self, model_type: str = "openai"):
         self.chat_model = self.get_chat_model(model_type)
 
-    def get_chat_model(self, model_type: str) -> ChatOpenAI | None:
+    def get_chat_model(self, model_type: str) -> ChatOpenAI:
         if model_type == "openai":
-            if OPENAI_API_KEY is None:
+            if not OPENAI_API_KEY.get_secret_value():
                 raise ValueError("OPENAI_API_KEY is not set.")
-            return ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL)
+            return ChatOpenAI(api_key=OPENAI_API_KEY.get_secret_value(), model=OPENAI_MODEL)
         # elif model_type == "anthropic":
         #     return Anthropic(api_key=SecretStr(ANTHROPIC_API_KEY), model=ANTHROPIC_MODEL)
         # elif model_type == "google":
@@ -134,7 +134,7 @@ class ChatService:
             logging.error(f"Error in chat_service: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def retrieve_context(self, user_query: str) -> str:
+    def retrieve_context(self, user_query: str) -> dict:
         """
         유저의 질문에 대해 유사도 높은 문서 반환
 
@@ -142,7 +142,7 @@ class ChatService:
             user_query (str): 유저의 질문
 
         Returns:
-            str:
+            dict
         """
         try:
             retrieved_docs = vector_store.similarity_search(user_query)

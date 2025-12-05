@@ -8,14 +8,14 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import settings
 
-OPENAI_API_KEY = settings.OPENAI_API_KEY.get_secret_value()
+OPENAI_API_KEY = settings.OPENAI_API_KEY
 OPENAI_EMBEDDING_MODEL = settings.OPENAI_EMBEDDING_MODEL
 CHUNK_SIZE = settings.CHUNK_SIZE
 CHUNK_OVERLAP = settings.CHUNK_OVERLAP
 CHROMA_DB_PATH = settings.CHROMA_DB_PATH
 COLLECTION_NAME = settings.COLLECTION_NAME
 
-embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL, api_key=OPENAI_API_KEY)
+embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL, api_key=OPENAI_API_KEY.get_secret_value())
 
 vector_store = Chroma(
     collection_name=COLLECTION_NAME,

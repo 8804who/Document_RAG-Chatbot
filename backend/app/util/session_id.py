@@ -27,7 +27,6 @@ async def save_session_id(email: str, session_id: str) -> None:
     Session ID 저장
 
     Args:
-        db: Database session
         email: The email of the user.
         session_id: The session ID.
     """
@@ -45,7 +44,6 @@ async def get_session_id(email: str) -> str | None:
     Session ID 조회
 
     Args:
-        db: Database session
         email: The email of the user.
 
     Returns:
