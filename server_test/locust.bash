@@ -2,4 +2,5 @@
 
 locust -f locustfile.py \
   --web-port 10005 \
-  --web-host 0.0.0.0
+  --web-host 0.0.0.0 \
+  --host http://localhost:10004
