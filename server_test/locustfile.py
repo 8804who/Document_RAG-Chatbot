@@ -1,13 +1,11 @@
-from locust import HttpUser, task, between, TaskSet
+from users.google_oauth_user import GoogleOAuthUser
+from users.unauthenticated_user import UnauthenticatedUser
 
+from core.config import settings
 
-class MainBehavior(TaskSet):
-    @task
-    def index(self):
-        self.client.get("/health")
-
-
-class LocustUser(HttpUser):
-    host = "http://localhost:10004"
-    tasks = [MainBehavior]
-    wait_time = between(1, 4)
+if settings.TEST_SCENARIO == "authenticated_user_chat":
+    users = [GoogleOAuthUser]
+elif settings.TEST_SCENARIO == "all":
+    users = [GoogleOAuthUser, UnauthenticatedUser]
+else:
+    raise ValueError(f"Invalid test scenario: {settings.TEST_SCENARIO}")
