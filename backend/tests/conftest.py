@@ -1,7 +1,7 @@
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock, MagicMock
 
-import pytest
 from httpx import AsyncClient, ASGITransport
+import pytest
 
 from app.main import app
 
@@ -16,6 +16,11 @@ async def client():
         patch("app.util.chat_history.close_chat_history"),
         patch("app.util.logger.setup_logger"),
     ):
+        # Initialize a mock chat_service for testing
+        mock_chat_service = MagicMock()
+        mock_chat_service.get_answer = AsyncMock()
+        app.state.chat_service = mock_chat_service
+        
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
