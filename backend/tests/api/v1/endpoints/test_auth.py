@@ -1,7 +1,6 @@
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from fastapi import HTTPException
 
 
@@ -20,7 +19,8 @@ async def test_auth_verify_token_success(client):
         }
 
         response = await client.post(
-            "/api/v1/auth/verify", headers={"Authorization": "Bearer valid_token"}
+            "/api/v1/auth/verify",
+            headers={"Authorization": "Bearer valid_token"},
         )
 
         assert response.status_code == 200
@@ -33,15 +33,20 @@ async def test_auth_verify_token_invalid(client):
     """Test token verification endpoint with invalid token"""
     with (
         patch("app.api.v1.endpoints.auth.verify_google_token") as mock_verify,
-        patch("app.api.v1.endpoints.auth.verify_google_id_token") as mock_verify_id,
+        patch(
+            "app.api.v1.endpoints.auth.verify_google_id_token"
+        ) as mock_verify_id,
     ):
-        mock_verify.side_effect = HTTPException(status_code=401, detail="Invalid token")
+        mock_verify.side_effect = HTTPException(
+            status_code=401, detail="Invalid token"
+        )
         mock_verify_id.side_effect = HTTPException(
             status_code=401, detail="Invalid token"
         )
 
         response = await client.post(
-            "/api/v1/auth/verify", headers={"Authorization": "Bearer invalid_token"}
+            "/api/v1/auth/verify",
+            headers={"Authorization": "Bearer invalid_token"},
         )
 
         assert response.status_code == 401
@@ -51,15 +56,21 @@ async def test_auth_verify_token_invalid(client):
 async def test_auth_verify_token_missing(client):
     """Test token verification endpoint without token"""
     response = await client.post("/api/v1/auth/verify")
-    assert response.status_code == 403  # FastAPI returns 403 for missing credentials
+    assert (
+        response.status_code == 403
+    )  # FastAPI returns 403 for missing credentials
 
 
 @pytest.mark.asyncio
 async def test_auth_refresh_token_success(client):
     """Test token refresh endpoint with valid refresh token"""
     with (
-        patch("app.api.v1.endpoints.auth.get_google_oauth_token") as mock_get_token,
-        patch("app.api.v1.endpoints.auth.httpx.AsyncClient") as mock_client_class,
+        patch(
+            "app.api.v1.endpoints.auth.get_google_oauth_token"
+        ) as mock_get_token,
+        patch(
+            "app.api.v1.endpoints.auth.httpx.AsyncClient"
+        ) as mock_client_class,
     ):
         mock_get_token.return_value = "valid_refresh_token"
 
@@ -93,7 +104,9 @@ async def test_auth_refresh_token_missing_email(client):
 @pytest.mark.asyncio
 async def test_auth_logout_success(client):
     """Test logout endpoint with valid token"""
-    with patch("app.api.v1.endpoints.auth.httpx.AsyncClient") as mock_client_class:
+    with patch(
+        "app.api.v1.endpoints.auth.httpx.AsyncClient"
+    ) as mock_client_class:
         mock_response = MagicMock()
         mock_response.status_code = 200
 

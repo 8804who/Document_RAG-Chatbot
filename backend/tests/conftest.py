@@ -1,7 +1,7 @@
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from httpx import AsyncClient, ASGITransport
 import pytest
+from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 
@@ -20,7 +20,7 @@ async def client():
         mock_chat_service = MagicMock()
         mock_chat_service.get_answer = AsyncMock()
         app.state.chat_service = mock_chat_service
-        
+
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:

@@ -5,7 +5,9 @@ from app.models.chat_log import ChatLog
 from app.util.logger import logger
 
 
-async def save_chat_log(db: AsyncSession, email: str, query: str, answer: str) -> None:
+async def save_chat_log(
+    db: AsyncSession, email: str, query: str, answer: str
+) -> None:
     """
     유저 채팅 로그 저장
 

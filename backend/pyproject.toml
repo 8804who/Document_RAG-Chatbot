@@ -8,5 +8,52 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.5.0",
     "ruff>=0.14.6",
 ]
+
+# ================================================================
+# Ruff (Linter & Formatter) Settings
+# ================================================================
+[tool.ruff]
+# 수정에서 제외할 파일 및 디렉토리 목록
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+]
+# 한 줄의 최대 글자 수
+line-length = 79
+
+# --- Linter (코드 분석기) 설정 ---
+[tool.ruff.lint]
+# 활성화할 규칙 선택:
+# E, W: pycodestyle (에러, 경고)
+# F: Pyflakes (논리적 오류)
+# I: isort (import 정렬)
+select = ["E", "F", "W", "I"]
+ignore = []
+
+# 모든 수정 가능한 규칙을 자동으로 고치도록 설정
+fixable = ["ALL"]
+unfixable = []
+
+# --- Formatter (코드 포맷터) 설정 ---
+[tool.ruff.format]
+# Black과 유사한 포맷팅 스타일을 따릅니다.
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# --- 파일/디렉토리별 규칙 무시 설정 ---
+[tool.ruff.lint.per-file-ignores]
+# settings 파일: 와일드카드 import 허용
+"config/settings/*" = ["F403", "F405"]
+
+# __init__.py 파일: 하위 모듈 노출을 위한 미사용/와일드카드 import 허용
+"**/__init__.py" = ["F401", "F403"]
+
+# 테스트 파일: 가독성을 위해 긴 줄 허용
+"**/test_*.py" = ["E501"]

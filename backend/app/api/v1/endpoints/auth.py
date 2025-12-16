@@ -1,17 +1,17 @@
 import json
-import httpx
 
+import httpx
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Request, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import settings
 from app.util.auth import (
-    save_google_oauth_token,
     get_google_oauth_token,
-    verify_google_token,
+    save_google_oauth_token,
     verify_google_id_token,
+    verify_google_token,
 )
 from app.util.logger import logger
 
@@ -66,7 +66,7 @@ async def auth(request: Request):
               id_token: "{token["id_token"]}",
               userinfo: {userinfo_str},
               verified: {str(token_verification["valid"]).lower()}
-            }}), 
+            }}),
             "http://localhost:10002"
           );
           window.close();
@@ -120,7 +120,9 @@ async def refresh_token(request: Request) -> JSONResponse:
         refresh_token = await get_google_oauth_token(body.get("email"))
 
         if not refresh_token:
-            raise HTTPException(status_code=400, detail="Refresh token is required")
+            raise HTTPException(
+                status_code=400, detail="Refresh token is required"
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -144,7 +146,9 @@ async def refresh_token(request: Request) -> JSONResponse:
                 status_code=200,
             )
         else:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            raise HTTPException(
+                status_code=401, detail="Invalid refresh token"
+            )
 
     except Exception as e:
         logger.error(f"Token refresh failed: {e}")
@@ -161,16 +165,20 @@ async def logout(request: Request):
         access_token = body.get("access_token")
 
         if not access_token:
-            raise HTTPException(status_code=400, detail="Access token is required")
+            raise HTTPException(
+                status_code=400, detail="Access token is required"
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://oauth2.googleapis.com/revoke", data={"token": access_token}
+                "https://oauth2.googleapis.com/revoke",
+                data={"token": access_token},
             )
 
         if response.status_code == 200:
             return JSONResponse(
-                content={"message": "Token revoked successfully"}, status_code=200
+                content={"message": "Token revoked successfully"},
+                status_code=200,
             )
         else:
             return JSONResponse(
