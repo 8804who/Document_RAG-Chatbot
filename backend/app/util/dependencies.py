@@ -1,7 +1,10 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.api.v1.endpoints.auth import verify_google_token, verify_google_id_token
+from app.api.v1.endpoints.auth import (
+    verify_google_id_token,
+    verify_google_token,
+)
 from app.util.logger import logger
 
 # Use auto_error=False so that missing credentials don't immediately

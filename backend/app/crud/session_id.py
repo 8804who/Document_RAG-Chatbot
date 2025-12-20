@@ -1,13 +1,16 @@
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 from typing import Optional
+
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.session_id import SessionId
 from app.util.logger import logger
 
 
-async def save_session_id(db: AsyncSession, email: str, session_id: str) -> None:
+async def save_session_id(
+    db: AsyncSession, email: str, session_id: str
+) -> None:
     """
     email를 통해 세션 아이디 저장
 

@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.util.chatbot import save_chat_log
-from app.util.session_id import session_id_management
 from app.util.dependencies import get_current_user
 from app.util.logger import logger
+from app.util.session_id import session_id_management
 
 chatbot_router = APIRouter()
 
@@ -30,9 +30,13 @@ async def chat(
         HTTPException: 챗봇 응답 중 오류가 발생한 경우 500 에러 반환
     """
     try:
-        logger.info(f"Chat request from user: {current_user.get('email', 'unknown')}")
+        logger.info(
+            f"Chat request from user: {current_user.get('email', 'unknown')}"
+        )
 
-        session_id = await session_id_management(current_user.get("email", "unknown"))
+        session_id = await session_id_management(
+            current_user.get("email", "unknown")
+        )
         response = await request.app.state.chat_service.get_answer(
             user_query=chat_request.message, session_id=session_id
         )

@@ -7,7 +7,9 @@ import pytest
 async def test_documents_upload_success(authenticated_client):
     """Test document upload endpoint"""
     with (
-        patch("app.api.v1.endpoints.documents.save_user_document_to_file") as mock_save,
+        patch(
+            "app.api.v1.endpoints.documents.save_user_document_to_file"
+        ) as mock_save,
         patch(
             "app.api.v1.endpoints.documents.insert_document_to_vector_store"
         ) as mock_insert,

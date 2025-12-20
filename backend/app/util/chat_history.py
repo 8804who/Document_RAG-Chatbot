@@ -1,5 +1,5 @@
-from langchain_postgres import PostgresChatMessageHistory
 import psycopg
+from langchain_postgres import PostgresChatMessageHistory
 
 from app.core.config import settings
 
@@ -22,8 +22,12 @@ def get_chat_history(session_id: str) -> PostgresChatMessageHistory:
 async def init_chat_history() -> None:
     global _async_connection
     if _async_connection is None:
-        _async_connection = await psycopg.AsyncConnection.connect(db_connection_string)
-        await PostgresChatMessageHistory.acreate_tables(_async_connection, table_name)
+        _async_connection = await psycopg.AsyncConnection.connect(
+            db_connection_string
+        )
+        await PostgresChatMessageHistory.acreate_tables(
+            _async_connection, table_name
+        )
 
 
 async def close_chat_history() -> None:

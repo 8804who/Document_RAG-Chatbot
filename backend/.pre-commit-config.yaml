@@ -1,0 +1,7 @@
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: "v0.13.2"  # 사용하고자 하는 ruff 버전 태그
+  hooks:
+    - id: ruff-check    # 린트 검사 (--fix 없을 경우 검사만)
+      args: [--fix]      # 자동수정 활성화 - 권장
+    - id: ruff-format   # 포매팅 (Black 대체)

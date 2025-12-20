@@ -1,5 +1,5 @@
-from langchain_core.messages import BaseMessage
 import pytest
+from langchain_core.messages import BaseMessage
 
 from app.util.tokenizer import OpenAiTokenizer
 
@@ -13,4 +13,9 @@ async def test_openai_tokenizer_count_tokens_with_string():
 @pytest.mark.asyncio
 async def test_openai_tokenizer_count_tokens_with_message():
     tokenizer = OpenAiTokenizer()
-    assert tokenizer.count_tokens(BaseMessage(type="human", content="Hello, world!")) == 4
+    assert (
+        tokenizer.count_tokens(
+            BaseMessage(type="human", content="Hello, world!")
+        )
+        == 4
+    )

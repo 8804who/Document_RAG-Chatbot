@@ -1,16 +1,16 @@
 from contextlib import asynccontextmanager
 from time import perf_counter
 
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-import uvicorn
 
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.services.chat_service import ChatService
-from app.util.chat_history import init_chat_history, close_chat_history
-from app.util.logger import setup_logger, logger
+from app.util.chat_history import close_chat_history, init_chat_history
+from app.util.logger import logger, setup_logger
 
 
 @asynccontextmanager
@@ -65,7 +65,9 @@ async def log_processing_time(request: Request, call_next):
     log_endpoint_list = ["/api/v1/chatbot/chat"]
 
     if request.url.path in log_endpoint_list:
-        logger.info(f"{request.method} {request.url.path} -> {process_time:.4f}s")
+        logger.info(
+            f"{request.method} {request.url.path} -> {process_time:.4f}s"
+        )
 
     return response
 

@@ -1,4 +1,3 @@
-from locust import HttpUser, task, between
 import httpx
 
 from core.config import settings
@@ -9,9 +8,9 @@ GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 GOOGLE_REFRESH_TOKEN = settings.GOOGLE_REFRESH_TOKEN
 
 
-async def get_google_access_token() -> str:
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
+def get_google_access_token() -> str:
+    with httpx.Client() as client:
+        response = client.post(
             "https://oauth2.googleapis.com/token",
             data={
                 "client_id": GOOGLE_CLIENT_ID,
@@ -24,5 +23,3 @@ async def get_google_access_token() -> str:
             return response.json()["access_token"]
         else:
             raise Exception("Failed to get Google access token")
-
-

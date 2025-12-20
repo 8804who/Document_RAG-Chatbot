@@ -1,9 +1,9 @@
-from operator import itemgetter
 import logging
 import textwrap
+from operator import itemgetter
 
 from fastapi import HTTPException
-from langchain_core.messages import trim_messages, BaseMessage
+from langchain_core.messages import BaseMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -14,12 +14,13 @@ from app.util.chat_history import get_chat_history
 from app.util.document import vector_store
 from app.util.tokenizer import OpenAiTokenizer
 
-
 OPENAI_API_KEY = settings.OPENAI_API_KEY
 OPENAI_MODEL = settings.OPENAI_MODEL
 
 trimmer = trim_messages(
-    strategy="last", max_tokens=2000, token_counter=OpenAiTokenizer().count_tokens
+    strategy="last",
+    max_tokens=2000,
+    token_counter=OpenAiTokenizer().count_tokens,
 )
 
 
@@ -31,7 +32,9 @@ class ChatService:
         if model_type == "openai":
             if not OPENAI_API_KEY.get_secret_value():
                 raise ValueError("OPENAI_API_KEY is not set.")
-            return ChatOpenAI(api_key=OPENAI_API_KEY.get_secret_value(), model=OPENAI_MODEL)
+            return ChatOpenAI(
+                api_key=OPENAI_API_KEY.get_secret_value(), model=OPENAI_MODEL
+            )
         # elif model_type == "anthropic":
         #     return Anthropic(api_key=SecretStr(ANTHROPIC_API_KEY), model=ANTHROPIC_MODEL)
         # elif model_type == "google":
@@ -39,7 +42,9 @@ class ChatService:
         else:
             raise ValueError(f"Invalid model type: {model_type}")
 
-    async def get_answer(self, user_query: str, session_id: str) -> BaseMessage:
+    async def get_answer(
+        self, user_query: str, session_id: str
+    ) -> BaseMessage:
         """
         유저의 질문에 응답을 반환
 
@@ -60,7 +65,7 @@ class ChatService:
                         You are a conversational AI focused on engaging in authentic dialogue. Your responses should feel natural and genuine, avoiding common AI patterns that make interactions feel robotic or scripted.
                         ## Core Approach
                         # 1. Conversation Style
-                        * Engage genuinely with topics rather than just providing information   
+                        * Engage genuinely with topics rather than just providing information
                         * Follow natural conversation flow instead of structured lists
                         * Show authentic interest through relevant follow-ups
                         * Respond to the emotional tone of conversations
@@ -106,7 +111,9 @@ class ChatService:
             )
 
             contexts = self.retrieve_context(user_query)
-            context = "\n".join([doc.page_content for doc in contexts["context"]])
+            context = "\n".join(
+                [doc.page_content for doc in contexts["context"]]
+            )
 
             chain = prompt | self.chat_model
 

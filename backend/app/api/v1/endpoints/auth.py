@@ -1,17 +1,17 @@
 import json
-import httpx
 
+import httpx
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Request, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import settings
 from app.util.auth import (
-    save_google_oauth_token,
     get_google_oauth_token,
-    verify_google_token,
+    save_google_oauth_token,
     verify_google_id_token,
+    verify_google_token,
 )
 from app.util.logger import logger
 
@@ -35,47 +35,55 @@ oauth.register(
 @auth_router.get("/login")
 async def login(request: Request):
     redirect_uri = f"{BASE_URL}/api/v1/auth/login/callback"
-    return await oauth.google.authorize_redirect(
-        request, redirect_uri, access_type="offline", prompt="consent"
-    )
+    try:
+        return await oauth.google.authorize_redirect(
+            request, redirect_uri, access_type="offline", prompt="consent"
+        )
+    except Exception as e:
+        logger.error(f"Error logging in: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @auth_router.get("/login/callback")
 async def auth(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    token_verification = await verify_google_token(token["access_token"])
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        token_verification = await verify_google_token(token["access_token"])
 
-    userinfo_json = token.get("userinfo", {})
-    userinfo_str = json.dumps(userinfo_json)
+        userinfo_json = token.get("userinfo", {})
+        userinfo_str = json.dumps(userinfo_json)
 
-    refresh_token = token["refresh_token"]
-    if refresh_token:
-        await save_google_oauth_token(
-            name=userinfo_json.get("name"),
-            email=userinfo_json.get("email"),
-            refresh_token=refresh_token,
-        )
+        refresh_token = token["refresh_token"]
+        if refresh_token:
+            await save_google_oauth_token(
+                name=userinfo_json.get("name"),
+                email=userinfo_json.get("email"),
+                refresh_token=refresh_token,
+            )
 
-    html_content = f"""
-    <html>
-      <body>
-        <script>
-          window.opener.postMessage(
-            JSON.stringify({{
-              access_token: "{token["access_token"]}",
-              id_token: "{token["id_token"]}",
-              userinfo: {userinfo_str},
-              verified: {str(token_verification["valid"]).lower()}
-            }}), 
-            "http://localhost:10002"
-          );
-          window.close();
-        </script>
-        <p>로그인 처리 중...</p>
-      </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+        html_content = f"""
+        <html>
+        <body>
+            <script>
+            window.opener.postMessage(
+                JSON.stringify({{
+                access_token: "{token["access_token"]}",
+                id_token: "{token["id_token"]}",
+                userinfo: {userinfo_str},
+                verified: {str(token_verification["valid"]).lower()}
+                }}),
+                "http://localhost:10002"
+            );
+            window.close();
+            </script>
+            <p>로그인 처리 중...</p>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        logger.error(f"Error logging in: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @auth_router.post("/verify")
@@ -120,17 +128,20 @@ async def refresh_token(request: Request) -> JSONResponse:
         refresh_token = await get_google_oauth_token(body.get("email"))
 
         if not refresh_token:
-            raise HTTPException(status_code=400, detail="Refresh token is required")
+            raise HTTPException(
+                status_code=400, detail="Refresh token is required"
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://oauth2.googleapis.com/token",
                 data={
                     "client_id": GOOGLE_CLIENT_ID,
-                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "client_secret": GOOGLE_CLIENT_SECRET.get_secret_value(),
                     "refresh_token": refresh_token,
                     "grant_type": "refresh_token",
                 },
+                timeout=10,
             )
 
         if response.status_code == 200:
@@ -144,7 +155,9 @@ async def refresh_token(request: Request) -> JSONResponse:
                 status_code=200,
             )
         else:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            raise HTTPException(
+                status_code=401, detail="Invalid refresh token"
+            )
 
     except Exception as e:
         logger.error(f"Token refresh failed: {e}")
@@ -161,16 +174,21 @@ async def logout(request: Request):
         access_token = body.get("access_token")
 
         if not access_token:
-            raise HTTPException(status_code=400, detail="Access token is required")
+            raise HTTPException(
+                status_code=400, detail="Access token is required"
+            )
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://oauth2.googleapis.com/revoke", data={"token": access_token}
+                "https://oauth2.googleapis.com/revoke",
+                data={"token": access_token},
+                timeout=10,
             )
 
         if response.status_code == 200:
             return JSONResponse(
-                content={"message": "Token revoked successfully"}, status_code=200
+                content={"message": "Token revoked successfully"},
+                status_code=200,
             )
         else:
             return JSONResponse(
