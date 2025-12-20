@@ -1,7 +1,7 @@
 import httpx
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
-
+from typing import Optional
 from app.core.config import settings
 from app.crud import auth as auth_crud
 from app.db.database import get_async_db_session
@@ -14,7 +14,7 @@ class GoogleOauthService(AuthService):
         self.google_client_id = settings.GOOGLE_CLIENT_ID
         self.google_client_secret = settings.GOOGLE_CLIENT_SECRET
 
-    async def verify_token(self, token: str) -> bool:
+    async def verify_token(self, token: str) -> dict:
         """
         Google에서 발급받은 access_token 인증
 
@@ -54,7 +54,7 @@ class GoogleOauthService(AuthService):
             raise Exception("Token verification failed")
 
 
-    async def verify_id_token(self, id_token_str: str) -> bool:
+    async def verify_id_token(self, id_token_str: str) -> dict:
         """
         Google ID Token 인증
 
@@ -84,7 +84,7 @@ class GoogleOauthService(AuthService):
             raise Exception("Invalid ID token")
 
 
-    async def save_token(self, name: str, email: str, refresh_token: str) -> bool:
+    async def save_token(self, name: str, email: str, refresh_token: str) -> None:
             """
             Save the Google OAuth token to the database.
 
@@ -103,7 +103,7 @@ class GoogleOauthService(AuthService):
                 raise e
 
 
-    async def get_token(self, email: str) -> str:
+    async def get_token(self, email: str) -> Optional[str]:
             """
             Get the Google OAuth token from the database.
 
