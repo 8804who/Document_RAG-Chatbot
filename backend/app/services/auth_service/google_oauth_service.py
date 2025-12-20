@@ -1,7 +1,9 @@
+from typing import Optional
+
 import httpx
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
-from typing import Optional
+
 from app.core.config import settings
 from app.crud import auth as auth_crud
 from app.db.database import get_async_db_session
