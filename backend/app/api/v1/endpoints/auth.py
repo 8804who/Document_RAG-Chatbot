@@ -35,47 +35,55 @@ oauth.register(
 @auth_router.get("/login")
 async def login(request: Request):
     redirect_uri = f"{BASE_URL}/api/v1/auth/login/callback"
-    return await oauth.google.authorize_redirect(
-        request, redirect_uri, access_type="offline", prompt="consent"
-    )
+    try:
+        return await oauth.google.authorize_redirect(
+            request, redirect_uri, access_type="offline", prompt="consent"
+        )
+    except Exception as e:
+        logger.error(f"Error logging in: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @auth_router.get("/login/callback")
 async def auth(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    token_verification = await verify_google_token(token["access_token"])
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        token_verification = await verify_google_token(token["access_token"])
 
-    userinfo_json = token.get("userinfo", {})
-    userinfo_str = json.dumps(userinfo_json)
+        userinfo_json = token.get("userinfo", {})
+        userinfo_str = json.dumps(userinfo_json)
 
-    refresh_token = token["refresh_token"]
-    if refresh_token:
-        await save_google_oauth_token(
-            name=userinfo_json.get("name"),
-            email=userinfo_json.get("email"),
-            refresh_token=refresh_token,
-        )
+        refresh_token = token["refresh_token"]
+        if refresh_token:
+            await save_google_oauth_token(
+                name=userinfo_json.get("name"),
+                email=userinfo_json.get("email"),
+                refresh_token=refresh_token,
+            )
 
-    html_content = f"""
-    <html>
-      <body>
-        <script>
-          window.opener.postMessage(
-            JSON.stringify({{
-              access_token: "{token["access_token"]}",
-              id_token: "{token["id_token"]}",
-              userinfo: {userinfo_str},
-              verified: {str(token_verification["valid"]).lower()}
-            }}),
-            "http://localhost:10002"
-          );
-          window.close();
-        </script>
-        <p>로그인 처리 중...</p>
-      </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+        html_content = f"""
+        <html>
+        <body>
+            <script>
+            window.opener.postMessage(
+                JSON.stringify({{
+                access_token: "{token["access_token"]}",
+                id_token: "{token["id_token"]}",
+                userinfo: {userinfo_str},
+                verified: {str(token_verification["valid"]).lower()}
+                }}),
+                "http://localhost:10002"
+            );
+            window.close();
+            </script>
+            <p>로그인 처리 중...</p>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        logger.error(f"Error logging in: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @auth_router.post("/verify")
@@ -129,10 +137,11 @@ async def refresh_token(request: Request) -> JSONResponse:
                 "https://oauth2.googleapis.com/token",
                 data={
                     "client_id": GOOGLE_CLIENT_ID,
-                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "client_secret": GOOGLE_CLIENT_SECRET.get_secret_value(),
                     "refresh_token": refresh_token,
                     "grant_type": "refresh_token",
                 },
+                timeout=10,
             )
 
         if response.status_code == 200:
@@ -173,6 +182,7 @@ async def logout(request: Request):
             response = await client.post(
                 "https://oauth2.googleapis.com/revoke",
                 data={"token": access_token},
+                timeout=10,
             )
 
         if response.status_code == 200:
