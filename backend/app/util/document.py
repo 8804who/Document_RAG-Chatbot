@@ -1,8 +1,7 @@
 import os
 
-from fastapi import HTTPException
-from langchain_core.documents import Document
 from langchain_chroma import Chroma
+from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -15,7 +14,9 @@ CHUNK_OVERLAP = settings.CHUNK_OVERLAP
 CHROMA_DB_PATH = settings.CHROMA_DB_PATH
 COLLECTION_NAME = settings.COLLECTION_NAME
 
-embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL, api_key=OPENAI_API_KEY.get_secret_value())
+embedding_model = OpenAIEmbeddings(
+    model=OPENAI_EMBEDDING_MODEL, api_key=OPENAI_API_KEY.get_secret_value()
+)
 
 vector_store = Chroma(
     collection_name=COLLECTION_NAME,
@@ -41,7 +42,7 @@ def save_user_document_to_file(
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(document_content)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise Exception(e)
 
 
 def read_user_document_from_file(user_id: str, document_id: str) -> str:
@@ -78,7 +79,7 @@ def get_user_documents_from_vector_store(user_id: str) -> list[str]:
         parsed_document_metadatas = parse_document_metadata(documents)
         return parsed_document_metadatas
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise Exception(e)
 
 
 def parse_document_metadata(document_metadatas: list[dict]) -> list[dict]:
@@ -128,7 +129,7 @@ def delete_document_from_vector_store(document_id: str) -> None:
         vector_store.delete(where={"document_id": document_id})
         vector_store.persist()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise Exception(e)
 
 
 def insert_document_to_vector_store(
@@ -158,7 +159,7 @@ def insert_document_to_vector_store(
             )
         vector_store.add_documents(documents)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise Exception(e)
 
 
 def chunk_document(document_content: str) -> list[str]:

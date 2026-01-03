@@ -48,7 +48,9 @@ class GoogleOAuth:
     TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo"
     TOKEN_URL = "https://oauth2.googleapis.com/token"
     REVOKE_URL = "https://oauth2.googleapis.com/revoke"
-    METADATA_URL = "https://accounts.google.com/.well-known/openid-configuration"
+    METADATA_URL = (
+        "https://accounts.google.com/.well-known/openid-configuration"
+    )
     SCOPE = "openid email profile"
 
 

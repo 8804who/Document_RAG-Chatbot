@@ -1,7 +1,7 @@
+import httpx
 from fastapi import HTTPException
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
-import httpx
 
 from app.core.config import settings
 from app.crud import auth as auth_crud
@@ -12,7 +12,9 @@ GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 
 
-async def save_google_oauth_token(name: str, email: str, refresh_token: str) -> None:
+async def save_google_oauth_token(
+    name: str, email: str, refresh_token: str
+) -> None:
     """
     Save the Google OAuth token to the database.
 
@@ -26,7 +28,9 @@ async def save_google_oauth_token(name: str, email: str, refresh_token: str) -> 
     """
     try:
         async with get_async_db_session() as db:
-            await auth_crud.save_google_oauth_token(db, name, email, refresh_token)
+            await auth_crud.save_google_oauth_token(
+                db, name, email, refresh_token
+            )
     except Exception as e:
         raise e
 
@@ -68,7 +72,9 @@ async def verify_google_token(token: str) -> dict:
             token_info = response.json()
 
             if token_info.get("aud") != GOOGLE_CLIENT_ID:
-                raise HTTPException(status_code=401, detail="Invalid token audience")
+                raise HTTPException(
+                    status_code=401, detail="Invalid token audience"
+                )
 
             return {
                 "valid": True,
@@ -84,7 +90,9 @@ async def verify_google_token(token: str) -> dict:
 
     except httpx.RequestException as e:
         logger.error(f"Token verification failed: {e}")
-        raise HTTPException(status_code=401, detail="Token verification failed")
+        raise HTTPException(
+            status_code=401, detail="Token verification failed"
+        )
 
 
 async def verify_google_id_token(id_token_str: str) -> dict:

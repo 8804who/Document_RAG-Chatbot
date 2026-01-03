@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field, SecretStr
-from typing import List, Optional
+from typing import Optional
 
 
 class Settings(BaseSettings):

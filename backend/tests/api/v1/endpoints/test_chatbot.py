@@ -1,7 +1,7 @@
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
 
-from langchain_core.messages import BaseMessage
 import pytest
+from langchain_core.messages import BaseMessage
 
 from app.main import app
 
@@ -67,7 +67,7 @@ async def test_chatbot_chat_missing_message(authenticated_client):
 async def test_chatbot_chat_error_handling(authenticated_client):
     """Test chatbot chat endpoint error handling"""
     from app.main import app
-    
+
     with (
         patch(
             "app.api.v1.endpoints.chatbot.session_id_management",
@@ -75,7 +75,7 @@ async def test_chatbot_chat_error_handling(authenticated_client):
         ) as mock_session_id_management,
     ):
         mock_session_id_management.return_value = "test_session_id"
-        
+
         # Mock the chat_service.get_answer method to raise an exception
         app.state.chat_service.get_answer = AsyncMock(
             side_effect=Exception("Service error")
