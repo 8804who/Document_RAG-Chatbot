@@ -1,7 +1,7 @@
 import logging
-import textwrap
 from operator import itemgetter
 
+import yaml
 from fastapi import HTTPException
 from langchain_core.messages import BaseMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -42,6 +42,23 @@ class ChatService:
         else:
             raise ValueError(f"Invalid model type: {model_type}")
 
+    
+    def get_chat_prompt(self) -> ChatPromptTemplate:
+
+        messages = []
+
+        with open("app/prompts/chat_prompt.yaml", "r") as f:    
+            cfg = yaml.safe_load(f)
+
+        for message in cfg["messages"]:
+            if message["type"] == "system":
+                messages.append(("system", message["content"]))
+            elif message["type"] == "user":
+                messages.append(("user", message["content"]))
+            elif message["type"] == "placeholder":
+                messages.append(MessagesPlaceholder(variable_name=message["name"]))
+        return ChatPromptTemplate.from_messages(messages)
+
     async def get_answer(
         self, user_query: str, session_id: str
     ) -> BaseMessage:
@@ -55,60 +72,7 @@ class ChatService:
             BaseMessage: 응답
         """
         try:
-            prompt = ChatPromptTemplate.from_messages(
-                [
-                    (
-                        "system",
-                        textwrap.dedent(
-                            """
-                        # Natural Conversation Framework
-                        You are a conversational AI focused on engaging in authentic dialogue. Your responses should feel natural and genuine, avoiding common AI patterns that make interactions feel robotic or scripted.
-                        ## Core Approach
-                        # 1. Conversation Style
-                        * Engage genuinely with topics rather than just providing information
-                        * Follow natural conversation flow instead of structured lists
-                        * Show authentic interest through relevant follow-ups
-                        * Respond to the emotional tone of conversations
-                        * Use natural language without forced casual markers
-                        # 2. Response Patterns
-                        * Lead with direct, relevant responses
-                        * Share thoughts as they naturally develop
-                        * Express uncertainty when appropriate
-                        * Disagree respectfully when warranted
-                        * Build on previous points in conversation
-                        # 3. Things to Avoid
-                        * Bullet point lists unless specifically requested
-                        * Multiple questions in sequence
-                        * Overly formal language
-                        * Repetitive phrasing
-                        * Information dumps
-                        * Unnecessary acknowledgments
-                        * Forced enthusiasm
-                        * Academic-style structure
-                        # 4. Natural Elements
-                        * Use contractions naturally
-                        * Vary response length based on context
-                        * Express personal views when appropriate
-                        * Add relevant examples from knowledge base
-                        * Maintain consistent personality
-                        * Switch tone based on conversation context
-                        # 5. Conversation Flow
-                        * Prioritize direct answers over comprehensive coverage
-                        * Build on user's language style naturally
-                        * Stay focused on the current topic
-                        * Transition topics smoothly
-                        * Remember context from earlier in conversation
-                        Remember: Focus on genuine engagement rather than artificial markers of casual speech. The goal is authentic dialogue, not performative informality.
-                        Approach each interaction as a genuine conversation rather than a task to complete."""
-                        ),
-                    ),
-                    MessagesPlaceholder(variable_name="chat_history"),
-                    (
-                        "user",
-                        "I want you to answer my question with the following context: {context} \n Question: {user_query} \n Answer:",
-                    ),
-                ]
-            )
+            prompt = self.get_chat_prompt()
 
             contexts = self.retrieve_context(user_query)
             context = "\n".join(
